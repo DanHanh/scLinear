@@ -12,6 +12,14 @@ RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "'scanpy[leiden]'", pip=TRUE),
+      list(package = "numpy", pip=TRUE),
+      list(package = "scikit-learn", pip=TRUE),
+    )
+  )
 Imports: 
     devtools,
     ggplot2,
