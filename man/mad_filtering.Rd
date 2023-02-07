@@ -2,7 +2,7 @@
 % Please edit documentation in R/qc.R
 \name{mad_filtering}
 \alias{mad_filtering}
-\title{Title}
+\title{Remove low quality cells based on the median absolute deviation.}
 \usage{
 mad_filtering(object = objec, nmads = 3, type = "both", mttype = "lower")
 }
@@ -19,7 +19,7 @@ mad_filtering(object = objec, nmads = 3, type = "both", mttype = "lower")
 object Seurat object
 }
 \description{
-Title
+Remove low quality cells based on the median absolute deviation.
 }
 \examples{
 sobj <- mad_filtering(sobj)

@@ -67,10 +67,49 @@ mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lo
 
 
 
-remove_doublets <- function(object){
+#' Remove Heterotypic doublets from sequencing data
+#'
+#' @param object A Seurat object
+#' @param samples meta.data information with  the sequencing samples
+#'
+#' @return object A Seurat object with removed doublets
+#' @export
+#'
+#' @examples
+#' remove_doublets(object = object, samples = "batch")
+
+remove_doublets <- function(object = object, samples = "samples"){
+
+  #### remove dublicates with scDblFinder
+  sce <- as.SingleCellExperiment(object)
+  sce <- scDblFinder::scDblFinder(sce, clusters = NULL, samples = samples)
+  a <- Seurat::as.Seurat(sce)
 
 
+  stat <-  table(object@meta.data[["scDblFinder.class"]])
 
+  object_visualization <- object %>%  preprocess_data() %>% Seurat::RunPCA(npcs = 100 ) %>% Seurat::RunUMAP(dims = 1:30)
+
+  p <- DimPlot(object_visualization, reduction = "umap", group.by = "scDblFinder.class") +
+    labs(title = "Detected doublets",
+         caption = paste0("#singlets: ", stat[["singlet"]], " ; ",
+                          "#doublets: ", stat[["doublet"]] ))
+  print(p)
+
+  object <- subset(object, subset = scDblFinder.class == "singlet")
+
+
+  ## remove unnecessary information from Seurat object
+  object@meta.data[["scDblFinder.cluster"]] <- NULL
+  object@meta.data[["scDblFinder.class"]] <- NULL
+  object@meta.data[["scDblFinder.score"]] <- NULL
+  object@meta.data[["scDblFinder.weighted"]] <- NULL
+  object@meta.data[["scDblFinder.difficulty"]] <- NULL
+  object@meta.data[["scDblFinder.cxds_score"]] <- NULL
+  object@meta.data[["scDblFinder.mostLikelyOrigin"]] <- NULL
+  object@meta.data[["scDblFinder.originAmbiguous"]] <- NULL
+
+  return(object)
 }
 
 

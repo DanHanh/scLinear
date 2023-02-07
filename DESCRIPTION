@@ -14,6 +14,8 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     ggplot2,
+    reticulate,
     scater,
+    scDblFinder,
     scMRMA,
     Seurat
