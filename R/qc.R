@@ -11,7 +11,9 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' sobj <- mad_filtering(sobj)
+#' }
 
 mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lower"){
 
@@ -39,25 +41,25 @@ mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lo
   ## filter visualization
 
   DF <- data.frame(nCount_RNA = object@meta.data$nCount_RNA, nFeature_RNA = object@meta.data$nFeature_RNA , mito_percent = object@meta.data$mito_percent, Filtered = object@meta.data$mad_filtered)
-  p <- ggplot(DF, aes(x = nCount_RNA, y = nFeature_RNA , color = Filtered)) +
-    geom_point() + theme_bw() +
-    scale_color_manual(values = c("darkgreen", "darkred")) +
-    ggtitle("MAD filtered cells") +
-    labs(caption = paste0("#filtered cells: ", sum(DF$Filtered =="TRUE"), " from ", length(DF$Filtered), "cells", "\n",
+  p <- ggplot2::ggplot(DF, ggplot2::aes(x = nCount_RNA, y = nFeature_RNA , color = Filtered)) +
+    ggplot2::geom_point() + ggplot2::theme_bw() +
+    ggplot2::scale_color_manual(values = c("darkgreen", "darkred")) +
+    ggplot2::ggtitle("MAD filtered cells") +
+    ggplot2::labs(caption = paste0("#filtered cells: ", sum(DF$Filtered =="TRUE"), " from ", length(DF$Filtered), "cells", "\n",
                           "nCount_th: ", round(attr(nCount_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(nCount_ol, "thresholds")["higher"], digits = 1), "\n",
                           "nFeature_th: ", round(attr(nFeature_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(nFeature_ol, "thresholds")["higher"], digits = 1), "\n",
                           "pMito_th: ", round(attr(pMito_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(pMito_ol, "thresholds")["higher"], digits = 1))
          ) +
-    geom_vline(xintercept = attr(nCount_ol, "thresholds"), color = 'red', linetype = "dashed") +
-    geom_hline(yintercept = attr(nFeature_ol, "thresholds"), color = 'red', linetype = "dashed") +
-    scale_x_continuous(trans='log10') +
-    scale_y_continuous(trans='log10')
-  print(p)
+    ggplot2::geom_vline(xintercept = attr(nCount_ol, "thresholds"), color = 'red', linetype = "dashed") +
+    ggplot2::geom_hline(yintercept = attr(nFeature_ol, "thresholds"), color = 'red', linetype = "dashed") +
+    ggplot2::scale_x_continuous(trans='log10') +
+    ggplot2::scale_y_continuous(trans='log10')
+    base::print(p)
 
 
   ## remove filtered cells
 
-  object <- subset(object, subset = mad_filtered == "FALSE")
+  object <- Seurat::subset(object, subset = mad_filtered == "FALSE")
   return(object)
 }
 
@@ -76,17 +78,19 @@ mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lo
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' remove_doublets(object = object, samples = "batch")
+#' }
 
 remove_doublets <- function(object = object, samples = "samples"){
 
   #### remove dublicates with scDblFinder
-  sce <- as.SingleCellExperiment(object)
+  sce <- Seurat::as.SingleCellExperiment(object)
   sce <- scDblFinder::scDblFinder(sce, clusters = NULL, samples = samples)
   a <- Seurat::as.Seurat(sce)
 
 
-  stat <-  table(object@meta.data[["scDblFinder.class"]])
+  stat <-  base::table(object@meta.data[["scDblFinder.class"]])
 
   object_visualization <- object %>%  preprocess_data() %>% Seurat::RunPCA(npcs = 100 ) %>% Seurat::RunUMAP(dims = 1:30)
 

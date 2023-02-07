@@ -8,7 +8,9 @@
 #' @export
 #'
 #' @examples
-#' preprocess_data(object = sobj)
+#' \dontrun{
+#' sobj <- preprocess_data(object = sobj)
+#' }
 
 
 preprocess_data <- function(object = object){

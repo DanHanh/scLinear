@@ -16,5 +16,7 @@ A seurat object
 Title
 }
 \examples{
+\dontrun{
 read_data(mat)
+}
 }

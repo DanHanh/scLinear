@@ -7,7 +7,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' read_data(mat)
+#' }
+
 read_data <- function(mat){
 
   object <- mat

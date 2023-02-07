@@ -22,5 +22,7 @@ object Seurat object
 Remove low quality cells based on the median absolute deviation.
 }
 \examples{
+\dontrun{
 sobj <- mad_filtering(sobj)
+}
 }

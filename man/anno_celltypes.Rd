@@ -16,5 +16,7 @@ A Seurat object
 Annotate each cell with the corresponding cell type
 }
 \examples{
-anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
+\dontrun{
+sobj <- anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
+}
 }

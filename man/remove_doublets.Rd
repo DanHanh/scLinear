@@ -18,5 +18,7 @@ object A Seurat object with removed doublets
 Remove Heterotypic doublets from sequencing data
 }
 \examples{
+\dontrun{
 remove_doublets(object = object, samples = "batch")
+}
 }

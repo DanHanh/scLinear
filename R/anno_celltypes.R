@@ -8,7 +8,9 @@
 #' @export
 #'
 #' @examples
-#' anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
+#' \dontrun{
+#' sobj <- anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
+#' }
 
 anno_celltypes <- function(object, anno_level = 2, species = "Hs", ...){
   ## load Human Panglao database

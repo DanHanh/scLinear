@@ -4,7 +4,12 @@
 \alias{scLinear}
 \title{Predict modalities based on gene expression data}
 \usage{
-scLinear(object = object)
+scLinear(
+  object = object,
+  remove_doublets = FALSE,
+  low_qc_cell_removal = FALSE,
+  anno_level = 2
+)
 }
 \arguments{
 \item{object}{A Seurat object}
@@ -16,5 +21,7 @@ A Seurat object containing additional single cell modalities
 Predict modalities based on gene expression data
 }
 \examples{
+\dontrun{
 sobj <- scLinear(object = sobj)
+}
 }

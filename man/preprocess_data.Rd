@@ -16,5 +16,7 @@ A seurat object with preprocessed data
 Preprocess single cell sequencing data
 }
 \examples{
-preprocess_data(object = sobj)
+\dontrun{
+sobj <- preprocess_data(object = sobj)
+}
 }
