@@ -15,7 +15,7 @@
 scLinear <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2){
 
   reticulate::source_python("./inst/python/example.py")
-  print(addition(2,5))
+
 
   Seurat::DefaultAssay(object) <- "RNA"
 
