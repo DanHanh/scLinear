@@ -1,10 +1,10 @@
 
 
-#' Predict modalities based on gene expression data
+#' Prepare data for modality prediction
 #'
 #' @param object A Seurat object
 #'
-#' @return A Seurat object containing additional single cell modalities
+#' @return object A Seurat object containing with annotated cell types
 #' @export
 #'
 #' @examples
@@ -12,10 +12,7 @@
 #' sobj <- scLinear(object = sobj)
 #' }
 
-scLinear <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2){
-
-  reticulate::source_python("./inst/python/example.py")
-
+prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2){
 
   Seurat::DefaultAssay(object) <- "RNA"
 
@@ -37,8 +34,29 @@ scLinear <- function(object = object, remove_doublets = FALSE, low_qc_cell_remov
   p1 <- DimPlot(sobj, group.by = "cell_type", label = TRUE, repel = TRUE) + theme(legend.position = "null")
   p2 <- DimPlot(sobj, group.by = "original_cell_type", label = TRUE, repel = TRUE) + theme(legend.position = "null")
 
-  print(p1 + p2 )
+  print(p1 + p2)
+
+
 
   return(object)
+
+}
+
+
+#' Predict modalities based on gene expression data
+#'
+#' @param object
+#'
+#' @return object A Seurat object containing additional single cell modalities
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' sobj <- scLinear(object = sobj)
+#' }
+scLinear <- function(object = object, cell_type){
+  reticulate::source_python("./inst/python/preprocessing.py")
+  reticulate::source_python("./inst/python/evaluate.py")
+
 
 }

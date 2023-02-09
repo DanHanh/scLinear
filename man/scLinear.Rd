@@ -4,18 +4,13 @@
 \alias{scLinear}
 \title{Predict modalities based on gene expression data}
 \usage{
-scLinear(
-  object = object,
-  remove_doublets = FALSE,
-  low_qc_cell_removal = FALSE,
-  anno_level = 2
-)
+scLinear(object = object)
 }
 \arguments{
-\item{object}{A Seurat object}
+\item{object}{}
 }
 \value{
-A Seurat object containing additional single cell modalities
+object A Seurat object containing additional single cell modalities
 }
 \description{
 Predict modalities based on gene expression data

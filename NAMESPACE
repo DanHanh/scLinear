@@ -2,6 +2,7 @@
 
 export(anno_celltypes)
 export(mad_filtering)
+export(prepare_data)
 export(preprocess_data)
 export(read_data)
 export(remove_doublets)
