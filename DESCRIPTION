@@ -29,4 +29,5 @@ Imports:
     scDblFinder,
     scMRMA,
     Seurat
-Remotes: JiaLiVUMC/scMRMA 
+biocViews: scDblFinder
+Remotes: JiaLiVUMC/scMRMA
