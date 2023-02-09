@@ -27,7 +27,6 @@ Imports:
     reticulate,
     scater,
     scDblFinder,
-    scMRMA,
     Seurat
 biocViews: scDblFinder
 Remotes: JiaLiVUMC/scMRMA
