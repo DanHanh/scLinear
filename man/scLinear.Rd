@@ -4,7 +4,7 @@
 \alias{scLinear}
 \title{Predict modalities based on gene expression data}
 \usage{
-scLinear(object = object)
+scLinear(object = object, cell_type)
 }
 \arguments{
 \item{object}{}

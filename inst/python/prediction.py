@@ -5,8 +5,6 @@ import anndata as ad
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-from preprocessing import GEXPreprocessor
-
 
 class ADTPredictor:
     """Wrapper for running the GEX to ADT prediction pipeline."""

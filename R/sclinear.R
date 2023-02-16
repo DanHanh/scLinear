@@ -12,7 +12,7 @@
 #' sobj <- scLinear(object = sobj)
 #' }
 
-prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2){
+prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2, samples = samples){
 
   Seurat::DefaultAssay(object) <- "RNA"
 
@@ -31,8 +31,8 @@ prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_r
   object <- object %>% Seurat::RunPCA(npcs = 100 ) %>% Seurat::RunUMAP(dims = 1:30)
 
 
-  p1 <- DimPlot(sobj, group.by = "cell_type", label = TRUE, repel = TRUE) + theme(legend.position = "null")
-  p2 <- DimPlot(sobj, group.by = "original_cell_type", label = TRUE, repel = TRUE) + theme(legend.position = "null")
+  p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
+  p2 <- Seurat::DimPlot(object, group.by = "original_cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
 
   print(p1 + p2)
 
@@ -57,6 +57,15 @@ prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_r
 scLinear <- function(object = object, cell_type){
   reticulate::source_python("./inst/python/preprocessing.py")
   reticulate::source_python("./inst/python/evaluate.py")
+  reticulate::source_python("./inst/python/prediction.py")
 
+  object <- object %>% subset(subset = cell_type == "T")
+
+  gexp_matrix <- Matrix::as.matrix(object@assays$RNA@counts)
+
+  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+
+  pipe <- ADTPredictor(do_log1p = FALSE)
+  pipe.fit((gexp_matrix_py))
 
 }
