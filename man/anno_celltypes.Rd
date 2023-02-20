@@ -4,7 +4,13 @@
 \alias{anno_celltypes}
 \title{Annotate each cell with the corresponding cell type}
 \usage{
-anno_celltypes(object, anno_level = 2, species = "Hs", ...)
+anno_celltypes(
+  object,
+  anno_level = 2,
+  selfClusters = NULL,
+  species = "Hs",
+  ...
+)
 }
 \arguments{
 \item{object}{Seurat object}

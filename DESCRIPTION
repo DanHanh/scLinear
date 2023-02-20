@@ -24,9 +24,11 @@ Config/reticulate:
 Imports: 
     devtools,
     ggplot2,
+    intrinsicDimension,
     reticulate,
     scater,
     scDblFinder,
-    Seurat
+    Seurat,
+    tidyselect
 biocViews: scDblFinder
 Remotes: JiaLiVUMC/scMRMA

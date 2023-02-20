@@ -12,7 +12,7 @@
 #' sobj <- scLinear(object = sobj)
 #' }
 
-prepare_data <- function(object = object, remove_doublets = FALSE, low_qc_cell_removal = FALSE, anno_level = 2, samples = samples){
+prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = samples){
 
   Seurat::DefaultAssay(object) <- "RNA"
 
@@ -61,11 +61,17 @@ scLinear <- function(object = object, cell_type){
 
   object <- object %>% subset(subset = cell_type == "T")
 
-  gexp_matrix <- Matrix::as.matrix(object@assays$RNA@counts)
+  gexp_matrix <- t(as.matrix(object@assays$RNA@counts))
+  adt_matrix <- t(as.matrix(object@assays$ADT@counts))
+
+
 
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+  adt_matrix_py <- reticulate::r_to_py(adt_matrix)
 
   pipe <- ADTPredictor(do_log1p = FALSE)
-  pipe.fit((gexp_matrix_py))
+  pipe$fit(gexp_matrix_py, adt_matrix)
+  adt_pred <- pipe$predict(gexp_matrix_py)
+  evaluate(adt_pred, adt_matrix_py)
 
 }

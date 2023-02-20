@@ -4,7 +4,13 @@
 \alias{remove_doublets}
 \title{Remove Heterotypic doublets from sequencing data}
 \usage{
-remove_doublets(object = object, samples = "samples")
+remove_doublets(
+  object = object,
+  samples = NULL,
+  remove_cells = TRUE,
+  seed = 42,
+  ...
+)
 }
 \arguments{
 \item{object}{A Seurat object}

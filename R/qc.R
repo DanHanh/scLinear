@@ -15,22 +15,35 @@
 #' sobj <- mad_filtering(sobj)
 #' }
 
-mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lower"){
+mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, ...){
+
+  ##
+  if(is.null(samples)){
+    batch <- NULL
+  }else{
+    batch <- object@meta.data %>% dplyr::pull(samples)
+  }
 
   nCount_ol <- scater::isOutlier(object@meta.data$nCount_RNA,
                                  nmads = nmads,
                                  type = type,
-                                 log = TRUE)
+                                 log = TRUE,
+                                 batch = batch
+                                 )
 
   nFeature_ol <- scater::isOutlier(object@meta.data$nFeature_RNA,
                                    nmads = nmads,
                                    type = type,
-                                   log = TRUE)
+                                   log = TRUE,
+                                   batch = batch
+                                   )
 
-  pMito_ol <- scater::isOutlier(object@meta.data$nFeature_RNA,
+  pMito_ol <- scater::isOutlier(object@meta.data$mito_percent,
                                nmads = nmads,
                                type = mttype,
-                               log = FALSE)
+                               log = FALSE,
+                               batch = batch
+                               )
 
 
 
@@ -40,26 +53,43 @@ mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lo
 
   ## filter visualization
 
-  DF <- data.frame(nCount_RNA = object@meta.data$nCount_RNA, nFeature_RNA = object@meta.data$nFeature_RNA , mito_percent = object@meta.data$mito_percent, Filtered = object@meta.data$mad_filtered)
-  p <- ggplot2::ggplot(DF, ggplot2::aes(x = nCount_RNA, y = nFeature_RNA , color = Filtered)) +
+  metadata <- object@meta.data %>% dplyr::select(tidyselect::any_of(c("nCount_RNA", "nFeature_RNA", "mito_percent", "mad_filtered" ))) %>% dplyr::rename(Filtered = "mad_filtered")
+
+
+  p <- ggplot2::ggplot(metadata, ggplot2::aes(x = nCount_RNA, y = nFeature_RNA , color = Filtered)) +
     ggplot2::geom_point() + ggplot2::theme_bw() +
     ggplot2::scale_color_manual(values = c("darkgreen", "darkred")) +
-    ggplot2::ggtitle("MAD filtered cells") +
-    ggplot2::labs(caption = paste0("#filtered cells: ", sum(DF$Filtered =="TRUE"), " from ", length(DF$Filtered), "cells", "\n",
-                          "nCount_th: ", round(attr(nCount_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(nCount_ol, "thresholds")["higher"], digits = 1), "\n",
-                          "nFeature_th: ", round(attr(nFeature_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(nFeature_ol, "thresholds")["higher"], digits = 1), "\n",
-                          "pMito_th: ", round(attr(pMito_ol, "thresholds")["lower"], digits = 1), ", " ,round(attr(pMito_ol, "thresholds")["higher"], digits = 1))
-         ) +
-    ggplot2::geom_vline(xintercept = attr(nCount_ol, "thresholds"), color = 'red', linetype = "dashed") +
-    ggplot2::geom_hline(yintercept = attr(nFeature_ol, "thresholds"), color = 'red', linetype = "dashed") +
     ggplot2::scale_x_continuous(trans='log10') +
     ggplot2::scale_y_continuous(trans='log10')
+  base::print(p)
+
+
+  if(is.null(samples)){
+    p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
+      ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
+      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     base::print(p)
 
+  }else{
+    metadata <- cbind(metadata, data.frame(samples = object@meta.data %>% dplyr::pull(samples)))
 
-  ## remove filtered cells
 
-  object <- Seurat::subset(object, subset = mad_filtered == "FALSE")
+  p <- ggplot2::ggplot(metadata, ggplot2::aes(x = samples, fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
+    ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
+    ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+  base::print(p)
+
+
+  }
+
+  if(remove_cells){
+    ## remove filtered cells
+    object <- base::subset(object, subset = mad_filtered == "FALSE")
+    object@meta.data[["mad_filtered"]] <- NULL
+  }
+
   return(object)
 }
 
@@ -82,36 +112,45 @@ mad_filtering <- function(object = objec, nmads = 3, type = "both", mttype = "lo
 #' remove_doublets(object = object, samples = "batch")
 #' }
 
-remove_doublets <- function(object = object, samples = "samples"){
+remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE ,seed = 42, ...){
 
-  #### remove dublicates with scDblFinder
+  set.seed(seed = seed)
+
+  #### remove doublets with scDblFinder
   sce <- Seurat::as.SingleCellExperiment(object)
-  sce <- scDblFinder::scDblFinder(sce, clusters = NULL, samples = samples)
-  a <- Seurat::as.Seurat(sce)
+  sce <- scDblFinder::scDblFinder(sce, samples = samples, ...)
+
+  if(is.null(samples)){
+    metadata <- sce@colData@listData %>% as.data.frame() %>%
+      dplyr::select("scDblFinder.sample", "scDblFinder.class")
+
+    p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
+      ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
+      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+    base::print(p)
+
+  }else{
+    metadata <- sce@colData@listData %>% as.data.frame() %>%
+                  dplyr::select("scDblFinder.sample", "scDblFinder.class")
+
+    p <- ggplot2::ggplot(metadata, ggplot2::aes(x = scDblFinder.sample, fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
+      ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
+      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+    base::print(p)
+}
+  ## add singlet/doublet information to initial Seurat object
+  object[["scDblFinder.class"]] <- sce@colData@listData[["scDblFinder.class"]]
 
 
-  stat <-  base::table(object@meta.data[["scDblFinder.class"]])
+  if(remove_cells){
+    ## remove doublets
+    object <- base::subset(object, subset = scDblFinder.class == "singlet")
 
-  object_visualization <- object %>%  preprocess_data() %>% Seurat::RunPCA(npcs = 100 ) %>% Seurat::RunUMAP(dims = 1:30)
-
-  p <- DimPlot(object_visualization, reduction = "umap", group.by = "scDblFinder.class") +
-    labs(title = "Detected doublets",
-         caption = paste0("#singlets: ", stat[["singlet"]], " ; ",
-                          "#doublets: ", stat[["doublet"]] ))
-  print(p)
-
-  object <- subset(object, subset = scDblFinder.class == "singlet")
-
-
-  ## remove unnecessary information from Seurat object
-  object@meta.data[["scDblFinder.cluster"]] <- NULL
-  object@meta.data[["scDblFinder.class"]] <- NULL
-  object@meta.data[["scDblFinder.score"]] <- NULL
-  object@meta.data[["scDblFinder.weighted"]] <- NULL
-  object@meta.data[["scDblFinder.difficulty"]] <- NULL
-  object@meta.data[["scDblFinder.cxds_score"]] <- NULL
-  object@meta.data[["scDblFinder.mostLikelyOrigin"]] <- NULL
-  object@meta.data[["scDblFinder.originAmbiguous"]] <- NULL
+    ## remove unnecessary information from Seurat object
+    object@meta.data[["scDblFinder.class"]] <- NULL
+  }
 
   return(object)
 }

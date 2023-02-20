@@ -4,7 +4,15 @@
 \alias{mad_filtering}
 \title{Remove low quality cells based on the median absolute deviation.}
 \usage{
-mad_filtering(object = objec, nmads = 3, type = "both", mttype = "lower")
+mad_filtering(
+  object = objec,
+  samples = NULL,
+  nmads = 3,
+  type = "both",
+  mttype = "higher",
+  remove_cells = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Seurat object}

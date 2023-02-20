@@ -6,8 +6,8 @@
 \usage{
 prepare_data(
   object = object,
-  remove_doublets = FALSE,
-  low_qc_cell_removal = FALSE,
+  remove_doublets = TRUE,
+  low_qc_cell_removal = TRUE,
   anno_level = 2,
   samples = samples
 )
