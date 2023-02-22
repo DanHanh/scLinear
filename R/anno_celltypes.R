@@ -13,6 +13,7 @@
 #' }
 
 anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species = "Hs", ...){
+  default_assay <- Seurat::DefaultAssay(object)
   Seurat::DefaultAssay(object) <- "RNA"
 
   ## load Human Panglao database
@@ -32,10 +33,13 @@ anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species 
     for(i in anno_level){
       object@meta.data[[paste0("cell_type_", i)]] <-
         anno_res$multiR$annotationResult[[paste0("Level",i)]]
-
     }
+    ## additionaly add as cell type (for highes (lowest number) provided level)
+    object@meta.data[[paste0("cell_type")]] <-
+      anno_res$multiR$annotationResult[[paste0("Level",min(anno_level))]]
   }
 
+  Seurat::DefaultAssay(object) <- default_assay
 
   return(object)
 
@@ -84,7 +88,6 @@ cluster_with_integration <- function(object, method = "rpca", samples = "samples
   if(typeof(object) == "list"){
     object_list <- object
   }else{
-    Seurat::SplitObject(sobj, split.by = "batch")
     object_list <- Seurat::SplitObject(object, split.by = samples)
   }
 
@@ -118,11 +121,21 @@ cluster_with_integration <- function(object, method = "rpca", samples = "samples
   ## estimate the optimal number of PCs for clustering
   ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object_integrated@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
 
+  object_integrated <- object_integrated %>% Seurat::RunUMAP(dims = 1:ndims)
+
   object_integrated <- object_integrated %>% Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca")
 
   object_integrated <- object_integrated %>% Seurat::FindClusters(resolution = resolution)
 
   p <- visualize_data(object_integrated, group.by = "seurat_clusters")
+
+  ## run default processing steps also with rna assay if later used
+
+  Seurat::DefaultAssay(object_integrated) <- "RNA"
+  object_integrated <- object_integrated %>% Seurat::NormalizeData() %>%
+                        Seurat::FindVariableFeatures() %>% Seurat::ScaleData()
+
+  Seurat::DefaultAssay(object_integrated) <- "integrated"
 
   return(object_integrated)
 

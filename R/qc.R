@@ -122,7 +122,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 
   if(is.null(samples)){
     metadata <- sce@colData@listData %>% as.data.frame() %>%
-      dplyr::select("scDblFinder.sample", "scDblFinder.class")
+      dplyr::select("scDblFinder.class")
 
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
