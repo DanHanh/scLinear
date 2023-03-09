@@ -37,7 +37,7 @@ prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_re
     object <- object %>% anno_celltypes(anno_level = 2)
     object <- object %>% Seurat::RunPCA(npcs = 100 )
     ## estimate the optimal number of PCs for clustering
-    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object_integrated@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
     object <- object %>% Seurat::RunUMAP(dims = 1:ndims)
 
   }
@@ -128,19 +128,54 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 
 
   pipe$fit(gexp_matrix_py, adt_matrix_py)
-  pipe$fit(gexp_matrix_py, adt_matrix)
+
   return(pipe)
 }
 
 
-adt_predict <- function(){
+#' Predict ADT values from gene expression
+#'
+#' @param gexp
+#'
+#' @return A A
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' adt_predict(gextp)
+#' }
+adt_predict <- function(pipe, gexp){
   reticulate::source_python("./inst/python/prediction.py")
-  
-  
-  
-  
+
+  gexp_matrix <- as.matrix(gexp@counts)
+  gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
+
+
+  predicted_adt <- pipe$predict(gexp_matrix_py)
+
+  predicted_adt <- t(predicted_adt)
+
+  colnames(predicted_adt) <- colnames(gexp_matrix)
+
+
+
+  Seurat::CreateAssayObject(counts)
+
 }
 
+#' Evaluate the adt predictor
+#'
+#' @param pipe A
+#' @param gex_test A
+#' @param adt_test A
+#'
+#' @return A
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' evaluate_predictor(pipe, gex_test, adt_test)
+#' }
 evaluate_predictor <- function(pipe, gex_test, adt_test){
   reticulate::source_python("./inst/python/prediction.py")
   reticulate::source_python("./inst/python/evaluate.py")
