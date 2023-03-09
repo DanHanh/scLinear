@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import numpy as np
 import scanpy as sc
+import warnings
 from anndata import AnnData
 from sklearn.decomposition import TruncatedSVD
 
@@ -99,7 +100,10 @@ class GEXPreprocessor:
             adata.X = sc.pp.log1p(adata.X)
 
         # filter out non-expressed cells
-        sc.pp.filter_cells(adata, min_counts=1)
+        with warnings.catch_warnings():
+            # ignore UserWarning: Observation names are not unique.
+            warnings.filterwarnings("ignore", category=UserWarning)
+            sc.pp.filter_cells(adata, min_counts=1)
 
         if not self.do_tsvd_before_zscore:
             # row-wise Z-score normalization
