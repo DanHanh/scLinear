@@ -46,23 +46,16 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
                                )
 
 
-
   object@meta.data$mad_filtered <- (nCount_ol | nFeature_ol | pMito_ol)
 
-
-
   ## filter visualization
-
   metadata <- object@meta.data %>% dplyr::select(tidyselect::any_of(c("nCount_RNA", "nFeature_RNA", "mito_percent", "mad_filtered" ))) %>% dplyr::rename(Filtered = "mad_filtered")
-
-
   p <- ggplot2::ggplot(metadata, ggplot2::aes(x = nCount_RNA, y = nFeature_RNA , color = Filtered)) +
     ggplot2::geom_point() + ggplot2::theme_bw() +
     ggplot2::scale_color_manual(values = c("darkgreen", "darkred")) +
     ggplot2::scale_x_continuous(trans='log10') +
     ggplot2::scale_y_continuous(trans='log10')
   base::print(p)
-
 
   if(is.null(samples)){
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
@@ -113,7 +106,6 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 #' }
 
 remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE ,seed = 42, ...){
-
   set.seed(seed = seed)
 
   #### remove doublets with scDblFinder
@@ -142,7 +134,6 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 }
   ## add singlet/doublet information to initial Seurat object
   object[["scDblFinder.class"]] <- sce@colData@listData[["scDblFinder.class"]]
-
 
   if(remove_cells){
     ## remove doublets

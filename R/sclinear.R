@@ -12,12 +12,14 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8, seed = 42){
+prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
   set.seed(seed)
 
   Seurat::DefaultAssay(object) <- "RNA"
 
-  object <- object %>% preprocess_data()
+  object <- object %>% Seurat::NormalizeData() %>%
+                        Seurat::FindVariableFeatures() %>%
+                        Seurat::ScaleData()
 
   if(remove_doublets){
     object <- object %>% remove_doublets(samples = samples)
@@ -27,21 +29,18 @@ prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_re
     object <- object %>% mad_filtering(samples = samples)
   }
 
-  if(cluster_with_integrated_data){
-
-    object <- cluster_with_integration(object, samples = samples, resolution = resolution)
-    Seurat::Idents(object) <- object@meta.data[["seurat_clusters"]]
-    object <- object %>% anno_celltypes(anno_level = 2, selfClusters = Seurat::Idents(.))
-
-  }else{
-    object <- object %>% anno_celltypes(anno_level = 2)
-    object <- object %>% Seurat::RunPCA(npcs = 100 )
-    ## estimate the optimal number of PCs for clustering
-    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
-    object <- object %>% Seurat::RunUMAP(dims = 1:ndims)
-
+  if(integrate_data){
+    object <- integrate_samples(object, samples = samples, resolution = resolution)
   }
 
+  object <- cluster_data(object, resolution = resolution)
+  Seurat::Idents(object) <- object@meta.data[["seurat_clusters"]]
+
+  if(annotation_selfCluster){
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.))
+  }else{
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL)
+  }
 
 
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
@@ -66,10 +65,6 @@ prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_re
 #' sobj <- scLinear(object = sobj)
 #' }
 scLinear <- function(object = object, cell_type){
-  reticulate::source_python("./inst/python/preprocessing.py")
-  reticulate::source_python("./inst/python/evaluate.py")
-  reticulate::source_python("./inst/python/prediction.py")
-
   object <- object %>% base::subset(subset = cell_type == "T")
 
   gexp_matrix <- t(as.matrix(object@assays$RNA@counts))
@@ -100,8 +95,6 @@ scLinear <- function(object = object, cell_type){
 #' create_adt_predictor(do_log1p = FALSE)
 #' }
 create_adt_predictor <- function(do_log1p = FALSE){
-    reticulate::source_python("./inst/python/prediction.py")
-    reticulate::source_python("./inst/python/preprocessing.py")
     pipe <- ADTPredictor(do_log1p = do_log1p)
   return(pipe)
 }
@@ -126,7 +119,6 @@ fit_predictor <- function(pipe, gex_train , adt_train){
   gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
   adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
 
-
   pipe$fit(gexp_matrix_py, adt_matrix_py)
 
   return(pipe)
@@ -137,7 +129,7 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #'
 #' @param gexp
 #'
-#' @return A A
+#' @return adt_assay retuns an adt assay object
 #' @export
 #'
 #' @examples
@@ -145,22 +137,27 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #' adt_predict(gextp)
 #' }
 adt_predict <- function(pipe, gexp){
-  reticulate::source_python("./inst/python/prediction.py")
 
-  gexp_matrix <- as.matrix(gexp@counts)
-  gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
+  gexp_matrix <- t(as.matrix(gexp@counts))
+  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
+  predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
 
-  predicted_adt <- pipe$predict(gexp_matrix_py)
+  ## adt matrix
+  adt <- as.matrix(predicted_adt[[1]])
+  ## names of predicted proteins
+  adt_names <- predicted_adt[[2]]$to_list()
 
-  predicted_adt <- t(predicted_adt)
+  ## add
+  colnames(adt) <- adt_names
+  ## add initial cell names
+  rownames(adt) <- rownames(gexp_matrix)
+  ## transpose back for assay
+  adt <- t(adt)
 
-  colnames(predicted_adt) <- colnames(gexp_matrix)
+  adt_assay <- Seurat::CreateAssayObject(adt)
 
-
-
-  Seurat::CreateAssayObject(counts)
-
+  return(adt_assay)
 }
 
 #' Evaluate the adt predictor
@@ -177,18 +174,41 @@ adt_predict <- function(pipe, gexp){
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
 evaluate_predictor <- function(pipe, gex_test, adt_test){
-  reticulate::source_python("./inst/python/prediction.py")
-  reticulate::source_python("./inst/python/evaluate.py")
 
-  gexp_matrix <- as.matrix(gex_test@counts)
-  adt_matrix <- as.matrix(adt_test@counts)
+  gexp_matrix <- t(as.matrix(gexp@counts))
+  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
-  gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
-  adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
+  ## predict adt from test set
+  predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
+  ## adt matrix
+  adt_res <- as.matrix(predicted_adt[[1]])
+  ## names of predicted proteins
+  adt_res_names <- predicted_adt[[2]]$to_list()
+  ## add
+  colnames(adt_res) <- adt_res_names
+  ## add initial cell names
+  rownames(adt_res) <- rownames(gexp_matrix)
 
-  predicted_adt <- pipe$predict(gexp_matrix_py)
+  ## preprocess adt test matrix
+  adt_test_matrix <- t(as.matrix(adt_test@counts))
 
-  ev_res <- evaluate(predicted_adt, adt_matrix_py)
+  ## subset pipe and test marix to the intersection proteins predicted and in test matrix
+  adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_matrix)]
+  adt_test_matrix <- adt_test_matrix[,colnames(adt_test_matrix) %in% colnames(adt_res)]
+
+  ## reorder adt text matrix to the same order as predicted adt
+  adt_test_matrix <- adt_test_matrix[,match(colnames(adt_res), colnames(adt_test_matrix))]
+
+  ## lognormalize values
+  adt_res <- log1p(adt_res/rowSums(adt_res) * 10000)
+  adt_test_matrix <- log1p(adt_test_matrix/rowSums(adt_test_matrix) * 10000)
+
+
+  adt_res_py <- reticulate::r_to_py(adt_res)
+  adt_test_matrix_py<- reticulate::r_to_py(adt_test_matrix)
+
+
+  ev_res <- evaluate$evaluate(adt_res_py, adt_test_matrix_py)
 
   return(ev_res)
 }

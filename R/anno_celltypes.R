@@ -34,7 +34,7 @@ anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species 
       object@meta.data[[paste0("cell_type_", i)]] <-
         anno_res$multiR$annotationResult[[paste0("Level",i)]]
     }
-    ## additionaly add as cell type (for highes (lowest number) provided level)
+    ## additionaly add as cell type (for highest (lowest number) provided level)
     object@meta.data[[paste0("cell_type")]] <-
       anno_res$multiR$annotationResult[[paste0("Level",min(anno_level))]]
   }
@@ -83,7 +83,7 @@ visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
 
 
 
-cluster_with_integration <- function(object, method = "rpca", samples = "samples", resolution  = 0.8){
+integrate_samples <- function(object, method = "rpca", samples = "samples", resolution  = 0.8){
 
   if(typeof(object) == "list"){
     object_list <- object
@@ -115,22 +115,7 @@ cluster_with_integration <- function(object, method = "rpca", samples = "samples
 
   Seurat::DefaultAssay(object_integrated) <- "integrated"
 
-  object_integrated <- object_integrated %>%  Seurat::ScaleData() %>%
-                          Seurat::RunPCA(assay = "integrated", npcs = 100)
-
-  ## estimate the optimal number of PCs for clustering
-  ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object_integrated@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
-
-  object_integrated <- object_integrated %>% Seurat::RunUMAP(dims = 1:ndims)
-
-  object_integrated <- object_integrated %>% Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca")
-
-  object_integrated <- object_integrated %>% Seurat::FindClusters(resolution = resolution)
-
-  p <- visualize_data(object_integrated, group.by = "seurat_clusters")
-
-  ## run default processing steps also with rna assay if later used
-
+  # ## run default processing steps also with rna assay if later used
   Seurat::DefaultAssay(object_integrated) <- "RNA"
   object_integrated <- object_integrated %>% Seurat::NormalizeData() %>%
                         Seurat::FindVariableFeatures() %>% Seurat::ScaleData()
@@ -141,3 +126,28 @@ cluster_with_integration <- function(object, method = "rpca", samples = "samples
 
 }
 
+
+cluster_data <- function(object, resolution = 0.8){
+
+  default_assay <- Seurat::DefaultAssay(object)
+
+  if(default_assay == "integrated"){
+    object <- object %>% Seurat::ScaleData() %>%
+                          Seurat::RunPCA(assay = default_assay, npcs = 100)
+  }else{
+    object <- object %>% Seurat::NormalizeData() %>%
+                          Seurat::ScaleData() %>%
+                          Seurat::RunPCA(assay = default_assay, npcs = 100)
+  }
+
+  ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+
+  object <- object %>% Seurat::RunUMAP(dims = 1:ndims) %>% Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca") %>%
+              Seurat::FindClusters(resolution = resolution)
+
+  p <- visualize_data(object, group.by = "seurat_clusters")
+
+
+  return(object)
+
+}

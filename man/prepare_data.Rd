@@ -10,7 +10,8 @@ prepare_data(
   low_qc_cell_removal = TRUE,
   anno_level = 2,
   samples = NULL,
-  cluster_with_integrated_data = FALSE,
+  integrate_data = FALSE,
+  annotation_selfCluster = FALSE,
   resolution = 0.8,
   seed = 42
 )
