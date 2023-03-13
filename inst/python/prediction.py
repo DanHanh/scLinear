@@ -7,6 +7,7 @@ from numpy import ndarray
 from sklearn.linear_model import LinearRegression
 import warnings
 
+from preprocessing import GEXPreprocessor
 
 class ADTPredictor:
     """Wrapper for running the GEX to ADT prediction pipeline."""

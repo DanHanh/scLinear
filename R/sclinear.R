@@ -95,7 +95,7 @@ scLinear <- function(object = object, cell_type){
 #' create_adt_predictor(do_log1p = FALSE)
 #' }
 create_adt_predictor <- function(do_log1p = FALSE){
-    pipe <- ADTPredictor(do_log1p = do_log1p)
+    pipe <- prediction$ADTPredictor(do_log1p = do_log1p)
   return(pipe)
 }
 
