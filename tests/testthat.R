@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(scLinearDev)
+library(scLinear)
 
-test_check("scLinearDev")
+test_check("scLinear")

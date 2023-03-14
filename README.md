@@ -1,21 +1,21 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# scLinearDev
+# scLinear
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of scLinearDev is to …
+The goal of scLinear is to …
 
 ## Installation
 
-You can install the development version of scLinearDev from
+You can install the development version of scLinear from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("DanHanh/scLinearDev")
+devtools::install_github("DanHanh/scLinear")
 ```
 
 ## Example
@@ -23,7 +23,7 @@ devtools::install_github("DanHanh/scLinearDev")
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(scLinearDev)
+library(scLinear)
 ## basic example code
 ```
 
