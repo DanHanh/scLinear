@@ -163,7 +163,7 @@ adt_predict <- function(pipe, gexp){
 #' Evaluate the adt predictor
 #'
 #' @param pipe A
-#' @param gex_test A
+#' @param gexp_test A
 #' @param adt_test A
 #'
 #' @return A
@@ -173,9 +173,9 @@ adt_predict <- function(pipe, gexp){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gex_test, adt_test){
+evaluate_predictor <- function(pipe, gexp_test, adt_test){
 
-  gexp_matrix <- t(as.matrix(gexp@counts))
+  gexp_matrix <- t(as.matrix(gexp_test@counts))
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
   ## predict adt from test set
@@ -193,7 +193,7 @@ evaluate_predictor <- function(pipe, gex_test, adt_test){
   adt_test_matrix <- t(as.matrix(adt_test@counts))
 
   ## subset pipe and test marix to the intersection proteins predicted and in test matrix
-  adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_matrix)]
+  adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_test_matrix)]
   adt_test_matrix <- adt_test_matrix[,colnames(adt_test_matrix) %in% colnames(adt_res)]
 
   ## reorder adt text matrix to the same order as predicted adt
@@ -211,4 +211,35 @@ evaluate_predictor <- function(pipe, gex_test, adt_test){
   ev_res <- evaluate$evaluate(adt_res_py, adt_test_matrix_py)
 
   return(ev_res)
+}
+
+
+#' Load a pretrained model
+#'
+#' @param pipe A pipe
+#' @param model Choose pretrained model: all, bcells, tcells, nkcells
+#'
+#' @return pipe
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' load_pretrained_model(pipe, model = "all")
+#' }
+load_pretrained_model <- function(pipe, model = "all"){
+
+  load_path <-  base::system.file("python",package = "scLinearDev")
+
+
+  m <- switch(model,
+           "all" = "ADTPredictor_neuripstrain_alltypes.joblib",
+           "bcell" = "ADTPredictor_neuripstrain_Bcells.joblib",
+           "nkcell" = "ADTPredictor_neuripstrain_NKcells.joblib",
+           "tcell" = "ADTPredictor_neuripstrain_Tcells.joblib")
+
+
+  pipe$load(paste0(load_path,"/",m))
+
+  return(pipe)
+
 }

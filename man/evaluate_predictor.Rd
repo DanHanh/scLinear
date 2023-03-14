@@ -4,12 +4,12 @@
 \alias{evaluate_predictor}
 \title{Evaluate the adt predictor}
 \usage{
-evaluate_predictor(pipe, gex_test, adt_test)
+evaluate_predictor(pipe, gexp_test, adt_test)
 }
 \arguments{
 \item{pipe}{A}
 
-\item{gex_test}{A}
+\item{gexp_test}{A}
 
 \item{adt_test}{A}
 }
