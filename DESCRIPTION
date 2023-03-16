@@ -30,5 +30,6 @@ Imports:
     scater,
     scDblFinder,
     Seurat,
-    tidyselect
+    tidyselect,
+    pals
 Remotes: JiaLiVUMC/scMRMA

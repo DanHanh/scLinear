@@ -22,20 +22,25 @@ prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_re
                         Seurat::ScaleData()
 
   if(remove_doublets){
+    print("Start remove doublets")
     object <- object %>% remove_doublets(samples = samples)
   }
 
   if(low_qc_cell_removal){
+    print("Start low quality cell removal")
     object <- object %>% mad_filtering(samples = samples)
   }
 
   if(integrate_data){
+    print("Start integrate data")
     object <- integrate_samples(object, samples = samples, resolution = resolution)
   }
 
+  print("Start clustering data")
   object <- cluster_data(object, resolution = resolution)
   Seurat::Idents(object) <- object@meta.data[["seurat_clusters"]]
 
+  print("Start cell type annotation")
   if(annotation_selfCluster){
     object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.))
   }else{
