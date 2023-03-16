@@ -127,7 +127,9 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 
 #' Predict ADT values from gene expression
 #'
-#' @param gexp
+#' @param gexp A
+#' @param pipe A
+#' @param do_log1p A
 #'
 #' @return adt_assay retuns an adt assay object
 #' @export
@@ -136,9 +138,14 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #' \dontrun{
 #' adt_predict(gextp)
 #' }
-adt_predict <- function(pipe, gexp){
+adt_predict <- function(pipe, gexp, do_log1p = TRUE){
 
   gexp_matrix <- t(as.matrix(gexp@counts))
+
+  if(do_log1p){
+    gexp_matrix <- log1p(gexp_matrix)
+  }
+
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
@@ -165,6 +172,7 @@ adt_predict <- function(pipe, gexp){
 #' @param pipe A
 #' @param gexp_test A
 #' @param adt_test A
+#' @param do_log1p A
 #'
 #' @return A
 #' @export
@@ -173,24 +181,19 @@ adt_predict <- function(pipe, gexp){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gexp_test, adt_test){
+evaluate_predictor <- function(pipe, gexp_test, adt_test, do_log1p = TRUE){
 
-  gexp_matrix <- t(as.matrix(gexp_test@counts))
-  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+  predicted_adt <- adt_predict(pipe, gexp_test, do_log1p = do_log1p)
 
-  ## predict adt from test set
-  predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
-  ## adt matrix
-  adt_res <- as.matrix(predicted_adt[[1]])
-  ## names of predicted proteins
-  adt_res_names <- predicted_adt[[2]]$to_list()
-  ## add
-  colnames(adt_res) <- adt_res_names
-  ## add initial cell names
-  rownames(adt_res) <- rownames(gexp_matrix)
+  adt_res <- t(as.matrix(predicted_adt@counts))
 
   ## preprocess adt test matrix
   adt_test_matrix <- t(as.matrix(adt_test@counts))
+
+  ## use log1p on test adt data if necessary
+  if(do_log1p){
+    adt_test_matrix <- log1p(adt_test_matrix)
+  }
 
   ## subset pipe and test marix to the intersection proteins predicted and in test matrix
   adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_test_matrix)]
@@ -200,13 +203,12 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test){
   adt_test_matrix <- adt_test_matrix[,match(colnames(adt_res), colnames(adt_test_matrix))]
 
   ## lognormalize values
-  adt_res <- log1p(adt_res/rowSums(adt_res) * 10000)
-  adt_test_matrix <- log1p(adt_test_matrix/rowSums(adt_test_matrix) * 10000)
+  #adt_res <- log1p(adt_res/rowSums(adt_res) * 10000)
+  #adt_test_matrix <- log1p(adt_test_matrix/rowSums(adt_test_matrix) * 10000)
 
 
   adt_res_py <- reticulate::r_to_py(adt_res)
   adt_test_matrix_py<- reticulate::r_to_py(adt_test_matrix)
-
 
   ev_res <- evaluate$evaluate(adt_res_py, adt_test_matrix_py)
 
@@ -228,7 +230,7 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test){
 #' }
 load_pretrained_model <- function(pipe, model = "all"){
 
-  load_path <-  base::system.file("python",package = "scLinearDev")
+  load_path <-  base::system.file("python",package = "scLinear")
 
 
   m <- switch(model,

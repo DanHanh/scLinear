@@ -4,10 +4,14 @@
 \alias{adt_predict}
 \title{Predict ADT values from gene expression}
 \usage{
-adt_predict(pipe, gexp)
+adt_predict(pipe, gexp, do_log1p = TRUE)
 }
 \arguments{
-\item{gexp}{}
+\item{pipe}{A}
+
+\item{gexp}{A}
+
+\item{do_log1p}{A}
 }
 \value{
 adt_assay retuns an adt assay object

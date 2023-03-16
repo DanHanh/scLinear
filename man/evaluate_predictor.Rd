@@ -4,7 +4,7 @@
 \alias{evaluate_predictor}
 \title{Evaluate the adt predictor}
 \usage{
-evaluate_predictor(pipe, gexp_test, adt_test)
+evaluate_predictor(pipe, gexp_test, adt_test, do_log1p = TRUE)
 }
 \arguments{
 \item{pipe}{A}
@@ -12,6 +12,8 @@ evaluate_predictor(pipe, gexp_test, adt_test)
 \item{gexp_test}{A}
 
 \item{adt_test}{A}
+
+\item{do_log1p}{A}
 }
 \value{
 A

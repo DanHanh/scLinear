@@ -17,8 +17,7 @@ Config/reticulate:
     packages = list(
       list(package = "'scanpy[leiden]'", pip=TRUE),
       list(package = "numpy", pip=TRUE),
-      list(package = "scikit-learn", pip=TRUE),
-      list(package = "scanpy")
+      list(package = "scikit-learn", pip=TRUE)
     )
   )
 Imports: 
