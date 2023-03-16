@@ -31,5 +31,6 @@ Imports:
     scDblFinder,
     Seurat,
     tidyselect,
-    pals
+    pals,
+    scMRMA
 Remotes: JiaLiVUMC/scMRMA
