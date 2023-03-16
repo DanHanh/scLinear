@@ -162,6 +162,9 @@ adt_predict <- function(pipe, gexp, do_log1p = TRUE){
   ## transpose back for assay
   adt <- t(adt)
 
+  ## reverse log1p transformation to return raw count equivalent
+  adt <- exp(adt) -1
+
   adt_assay <- Seurat::CreateAssayObject(adt)
 
   return(adt_assay)
@@ -185,32 +188,27 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, do_log1p = TRUE){
 
   predicted_adt <- adt_predict(pipe, gexp_test, do_log1p = do_log1p)
 
-  adt_res <- t(as.matrix(predicted_adt@counts))
 
-  ## preprocess adt test matrix
-  adt_test_matrix <- t(as.matrix(adt_test@counts))
+  ## subset to only commone features
+  p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
+  t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
-  ## use log1p on test adt data if necessary
-  if(do_log1p){
-    adt_test_matrix <- log1p(adt_test_matrix)
-  }
 
-  ## subset pipe and test marix to the intersection proteins predicted and in test matrix
-  adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_test_matrix)]
-  adt_test_matrix <- adt_test_matrix[,colnames(adt_test_matrix) %in% colnames(adt_res)]
+  ### CLR transform data
+  p_adt <- Seurat::NormalizeData(p_adt, normalization.method = "CLR", margin = 2)
+  t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
+
+  ## transpose to fit anndata format
+  p_adt_matrix <- t(as.matrix(p_adt@data))
+  t_adt_matrix <- t(as.matrix(t_adt@data))
 
   ## reorder adt text matrix to the same order as predicted adt
-  adt_test_matrix <- adt_test_matrix[,match(colnames(adt_res), colnames(adt_test_matrix))]
+  t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
 
-  ## lognormalize values
-  #adt_res <- log1p(adt_res/rowSums(adt_res) * 10000)
-  #adt_test_matrix <- log1p(adt_test_matrix/rowSums(adt_test_matrix) * 10000)
+  p_adt_matrix_py <- reticulate::r_to_py(p_adt_matrix)
+  t_adt_matrix_py<- reticulate::r_to_py(t_adt_matrix)
 
-
-  adt_res_py <- reticulate::r_to_py(adt_res)
-  adt_test_matrix_py<- reticulate::r_to_py(adt_test_matrix)
-
-  ev_res <- evaluate$evaluate(adt_res_py, adt_test_matrix_py)
+  ev_res <- evaluate$evaluate(p_adt_matrix_py, t_adt_matrix_py)
 
   return(ev_res)
 }
