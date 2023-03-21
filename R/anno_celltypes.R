@@ -83,6 +83,20 @@ visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
 
 
 
+#' Title
+#'
+#' @param object A
+#' @param method A
+#' @param samples A
+#' @param resolution A
+#'
+#' @return object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' #' integrate_samples()
+#' }
 integrate_samples <- function(object, method = "rpca", samples = "samples", resolution  = 0.8){
 
   if(typeof(object) == "list"){
@@ -127,6 +141,18 @@ integrate_samples <- function(object, method = "rpca", samples = "samples", reso
 }
 
 
+#' Title
+#'
+#' @param object A
+#' @param resolution A
+#'
+#' @return object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' cluster_data()
+#' }
 cluster_data <- function(object, resolution = 0.8){
 
   default_assay <- Seurat::DefaultAssay(object)

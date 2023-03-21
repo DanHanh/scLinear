@@ -22,20 +22,25 @@ prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_re
                         Seurat::ScaleData()
 
   if(remove_doublets){
+    print("Start remove doublets")
     object <- object %>% remove_doublets(samples = samples)
   }
 
   if(low_qc_cell_removal){
+    print("Start low quality cell removal")
     object <- object %>% mad_filtering(samples = samples)
   }
 
   if(integrate_data){
+    print("Start integrate data")
     object <- integrate_samples(object, samples = samples, resolution = resolution)
   }
 
+  print("Start clustering data")
   object <- cluster_data(object, resolution = resolution)
   Seurat::Idents(object) <- object@meta.data[["seurat_clusters"]]
 
+  print("Start cell type annotation")
   if(annotation_selfCluster){
     object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.))
   }else{
@@ -127,7 +132,9 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 
 #' Predict ADT values from gene expression
 #'
-#' @param gexp
+#' @param gexp A
+#' @param pipe A
+#' @param do_log1p A
 #'
 #' @return adt_assay retuns an adt assay object
 #' @export
@@ -136,9 +143,14 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #' \dontrun{
 #' adt_predict(gextp)
 #' }
-adt_predict <- function(pipe, gexp){
+adt_predict <- function(pipe, gexp, do_log1p = TRUE){
 
   gexp_matrix <- t(as.matrix(gexp@counts))
+
+  if(do_log1p){
+    gexp_matrix <- log1p(gexp_matrix)
+  }
+
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
@@ -155,6 +167,9 @@ adt_predict <- function(pipe, gexp){
   ## transpose back for assay
   adt <- t(adt)
 
+  ## reverse log1p transformation to return raw count equivalent
+  adt <- exp(adt) -1
+
   adt_assay <- Seurat::CreateAssayObject(adt)
 
   return(adt_assay)
@@ -165,6 +180,7 @@ adt_predict <- function(pipe, gexp){
 #' @param pipe A
 #' @param gexp_test A
 #' @param adt_test A
+#' @param do_log1p A
 #'
 #' @return A
 #' @export
@@ -173,42 +189,31 @@ adt_predict <- function(pipe, gexp){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gexp_test, adt_test){
+evaluate_predictor <- function(pipe, gexp_test, adt_test, do_log1p = TRUE){
 
-  gexp_matrix <- t(as.matrix(gexp_test@counts))
-  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+  predicted_adt <- adt_predict(pipe, gexp_test, do_log1p = do_log1p)
 
-  ## predict adt from test set
-  predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
-  ## adt matrix
-  adt_res <- as.matrix(predicted_adt[[1]])
-  ## names of predicted proteins
-  adt_res_names <- predicted_adt[[2]]$to_list()
-  ## add
-  colnames(adt_res) <- adt_res_names
-  ## add initial cell names
-  rownames(adt_res) <- rownames(gexp_matrix)
 
-  ## preprocess adt test matrix
-  adt_test_matrix <- t(as.matrix(adt_test@counts))
+  ## subset to only commone features
+  p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
+  t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
-  ## subset pipe and test marix to the intersection proteins predicted and in test matrix
-  adt_res <- adt_res[,colnames(adt_res) %in% colnames(adt_test_matrix)]
-  adt_test_matrix <- adt_test_matrix[,colnames(adt_test_matrix) %in% colnames(adt_res)]
+
+  ### CLR transform data
+  p_adt <- Seurat::NormalizeData(p_adt, normalization.method = "CLR", margin = 2)
+  t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
+
+  ## transpose to fit anndata format
+  p_adt_matrix <- t(as.matrix(p_adt@data))
+  t_adt_matrix <- t(as.matrix(t_adt@data))
 
   ## reorder adt text matrix to the same order as predicted adt
-  adt_test_matrix <- adt_test_matrix[,match(colnames(adt_res), colnames(adt_test_matrix))]
+  t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
 
-  ## lognormalize values
-  adt_res <- log1p(adt_res/rowSums(adt_res) * 10000)
-  adt_test_matrix <- log1p(adt_test_matrix/rowSums(adt_test_matrix) * 10000)
+  p_adt_matrix_py <- reticulate::r_to_py(p_adt_matrix)
+  t_adt_matrix_py<- reticulate::r_to_py(t_adt_matrix)
 
-
-  adt_res_py <- reticulate::r_to_py(adt_res)
-  adt_test_matrix_py<- reticulate::r_to_py(adt_test_matrix)
-
-
-  ev_res <- evaluate$evaluate(adt_res_py, adt_test_matrix_py)
+  ev_res <- evaluate$evaluate(p_adt_matrix_py, t_adt_matrix_py)
 
   return(ev_res)
 }
@@ -228,7 +233,7 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test){
 #' }
 load_pretrained_model <- function(pipe, model = "all"){
 
-  load_path <-  base::system.file("python",package = "scLinearDev")
+  load_path <-  base::system.file("python",package = "scLinear")
 
 
   m <- switch(model,
