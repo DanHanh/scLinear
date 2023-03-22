@@ -32,5 +32,8 @@ Imports:
     Seurat,
     tidyselect,
     pals,
-    scMRMA
+    scMRMA,
+    scran,
+    SingleCellExperiment,
+    DropletUtils
 Remotes: JiaLiVUMC/scMRMA
