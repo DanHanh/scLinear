@@ -33,10 +33,32 @@ devtools::install_github("DanHanh/scLinear")
 
 This is a basic example which shows you how to solve a common problem:
 
-```{r example}
+```r
 library(scLinear)
+
+## get some example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
+# The download link: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3.
+# The File: "Feature / cell matrix (raw)"
+
+pbmc10k.data <- Seurat::Read10X(data.dir = "raw_feature_bc_matrix")
+rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
+pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
+pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
+Seurat::DefaultAssay(pbmc10k) <- "RNA"
+
+pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster = TRUE, remove_empty_droplets = TRUE)
+
 ## basic example code
+
 ```
+
+
+```{r}
+
+
+```
+
+
 
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 

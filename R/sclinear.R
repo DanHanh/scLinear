@@ -155,18 +155,20 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #' }
 adt_predict <- function(pipe, gexp, normalize = TRUE){
 
+  gexp_matrix <- gexp@counts
+
   if(normalize){
     ## normalize data GEX
-    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp))
+    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
     clusters <- scran::quickCluster(sce)
     sce <- scran::computeSumFactors(sce, clusters=clusters)
     sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
-    gexp <- sce@assays@data@listData[["normcounts"]]
-    gexp <- base::log1p(gexp)
+    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
+    gexp_matrix <- base::log1p(gexp_matrix)
   }
 
 
-  gexp_matrix <- t(as.matrix(gexp@counts))
+  gexp_matrix <- t(as.matrix(gexp_matrix))
 
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
