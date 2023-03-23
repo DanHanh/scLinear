@@ -202,7 +202,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   ## transpose back for assay
   adt <- t(adt)
 
-  adt_assay <- Seurat::CreateAssayObject(adt)
+  adt_assay <- Seurat::CreateAssayObject(data = adt)
 
   return(adt_assay)
 }
@@ -231,7 +231,6 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
 
 
   ### CLR transform data test data
-  #p_adt <- Seurat::NormalizeData(p_adt, normalization.method = "CLR", margin = 2)
   if(normalize){
     t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
   }
