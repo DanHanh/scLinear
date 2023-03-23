@@ -128,9 +128,9 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' \dontrun{
 #' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gex_train , adt_train, normalize = TRUE){
+fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
 
-  gexp_matrix <- as.matrix(gex_train@counts)
+  gexp_matrix <- as.matrix(gexp_train@counts)
   adt_matrix <- as.matrix(adt_train@counts)
 
   if(normalize){
@@ -193,7 +193,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   ## adt matrix
   adt <- as.matrix(predicted_adt[[1]])
   ## names of predicted proteins
-  adt_names <- predicted_adt[[2]]$to_list()
+  adt_names <- predicted_adt[[2]] #$to_list()
 
   ## add
   colnames(adt) <- adt_names
@@ -201,9 +201,6 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   rownames(adt) <- rownames(gexp_matrix)
   ## transpose back for assay
   adt <- t(adt)
-
-  ## reverse log1p transformation to return raw count equivalent
-  adt <- exp(adt) -1
 
   adt_assay <- Seurat::CreateAssayObject(adt)
 
@@ -226,7 +223,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
 #' }
 evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
 
-  predicted_adt <- adt_predict(pipe, gexp_test, normalize = TRUE)
+  predicted_adt <- adt_predict(pipe, gexp_test, normalize = normalize)
 
   ## subset to only comone features
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
