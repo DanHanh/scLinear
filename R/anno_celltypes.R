@@ -177,3 +177,5 @@ cluster_data <- function(object, resolution = 0.8){
   return(object)
 
 }
+
+

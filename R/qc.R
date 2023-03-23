@@ -147,3 +147,26 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 }
 
 
+#' Remove empty droplets
+#'
+#' @param object A Seurat object
+#' @param lower A
+#' @param FDR A
+#'
+#' @return object A Seurat object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' empty_drops(object = object, lower = 100, FDR = 0.01)
+#' }
+empty_drops <- function(object, lower = 100, FDR = 0.01){
+
+  e.out <- DropletUtils::emptyDrops(object@assays$RNA@counts, lower = lower)
+  is.cell <- e.out$FDR <= FDR
+  which(is.cell)
+
+  object <- object[, which(is.cell)]
+
+  return(object)
+}

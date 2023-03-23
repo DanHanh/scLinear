@@ -4,14 +4,16 @@
 \alias{fit_predictor}
 \title{Train a predictor object}
 \usage{
-fit_predictor(pipe, gex_train, adt_train)
+fit_predictor(pipe, gexp_train, adt_train, normalize = TRUE)
 }
 \arguments{
 \item{pipe}{A predictor object}
 
-\item{gex_train}{Gene expression assay}
-
 \item{adt_train}{ADT assay}
+
+\item{normalize}{Normalize GEX and ATD assay before fitting.}
+
+\item{gex_train}{Gene expression assay}
 }
 \value{
 pipe A trained predictor object
@@ -21,6 +23,6 @@ Train a predictor object
 }
 \examples{
 \dontrun{
-fit_predictor(pipe = pipe, = object@assays$RNA , adt_train = object@assays$ADT)
+fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 }
 }

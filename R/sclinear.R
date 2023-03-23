@@ -12,10 +12,20 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object = object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
   set.seed(seed)
 
   Seurat::DefaultAssay(object) <- "RNA"
+
+  if(remove_empty_droplets){
+
+    object <- empty_drops(object = object, lower = lower, FDR = FDR)
+  }
+
+  if(!("mito_percent" %in% names(object@meta.data))){
+    object$mito_percent <- Seurat::PercentageFeatureSet(object, pattern = "^MT-")
+  }
+
 
   object <- object %>% Seurat::NormalizeData() %>%
                         Seurat::FindVariableFeatures() %>%
@@ -109,22 +119,38 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' @param pipe A predictor object
 #' @param gex_train Gene expression assay
 #' @param adt_train ADT assay
+#' @param normalize Normalize GEX and ATD assay before fitting.
 #'
 #' @return pipe A trained predictor object
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' fit_predictor(pipe = pipe, = object@assays$RNA , adt_train = object@assays$ADT)
+#' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gex_train , adt_train){
-  gexp_matrix <- as.matrix(gex_train@counts)
+fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
+
+  gexp_matrix <- as.matrix(gexp_train@counts)
   adt_matrix <- as.matrix(adt_train@counts)
+
+  if(normalize){
+    ## normalize data GEX
+    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
+    clusters <- scran::quickCluster(sce)
+    sce <- scran::computeSumFactors(sce, clusters=clusters)
+    sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
+    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
+    gexp_matrix <- base::log1p(gexp_matrix)
+  }
+
+  if(normalize){
+    adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
+  }
 
   gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
   adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
 
-  pipe$fit(gexp_matrix_py, adt_matrix_py)
+  pipe$fit(gexp_matrix_py, adt_matrix_py, gex_names = rownames(gexp_matrix), adt_names = rownames(adt_matrix))
 
   return(pipe)
 }
@@ -143,13 +169,22 @@ fit_predictor <- function(pipe, gex_train , adt_train){
 #' \dontrun{
 #' adt_predict(gextp)
 #' }
-adt_predict <- function(pipe, gexp, do_log1p = TRUE){
+adt_predict <- function(pipe, gexp, normalize = TRUE){
 
-  gexp_matrix <- t(as.matrix(gexp@counts))
+  gexp_matrix <- gexp@counts
 
-  if(do_log1p){
-    gexp_matrix <- log1p(gexp_matrix)
+  if(normalize){
+    ## normalize data GEX
+    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
+    clusters <- scran::quickCluster(sce)
+    sce <- scran::computeSumFactors(sce, clusters=clusters)
+    sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
+    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
+    gexp_matrix <- base::log1p(gexp_matrix)
   }
+
+
+  gexp_matrix <- t(as.matrix(gexp_matrix))
 
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
@@ -158,8 +193,11 @@ adt_predict <- function(pipe, gexp, do_log1p = TRUE){
   ## adt matrix
   adt <- as.matrix(predicted_adt[[1]])
   ## names of predicted proteins
-  adt_names <- predicted_adt[[2]]$to_list()
-
+  if(typeof(predicted_adt[[2]]) == "environment"){
+    adt_names <- predicted_adt[[2]]$to_list()
+  }else{
+    adt_names <- predicted_adt[[2]]
+  }
   ## add
   colnames(adt) <- adt_names
   ## add initial cell names
@@ -167,10 +205,7 @@ adt_predict <- function(pipe, gexp, do_log1p = TRUE){
   ## transpose back for assay
   adt <- t(adt)
 
-  ## reverse log1p transformation to return raw count equivalent
-  adt <- exp(adt) -1
-
-  adt_assay <- Seurat::CreateAssayObject(adt)
+  adt_assay <- Seurat::CreateAssayObject(data = adt)
 
   return(adt_assay)
 }
@@ -189,20 +224,19 @@ adt_predict <- function(pipe, gexp, do_log1p = TRUE){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gexp_test, adt_test, do_log1p = TRUE){
+evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
 
-  predicted_adt <- adt_predict(pipe, gexp_test, do_log1p = do_log1p)
+  predicted_adt <- adt_predict(pipe, gexp_test, normalize = normalize)
 
-
-  ## subset to only commone features
+  ## subset to only comone features
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
   t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
 
-  ### CLR transform data
-  p_adt <- Seurat::NormalizeData(p_adt, normalization.method = "CLR", margin = 2)
-  t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
-
+  ### CLR transform data test data
+  if(normalize){
+    t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
+  }
   ## transpose to fit anndata format
   p_adt_matrix <- t(as.matrix(p_adt@data))
   t_adt_matrix <- t(as.matrix(t_adt@data))
@@ -244,6 +278,7 @@ load_pretrained_model <- function(pipe, model = "all"){
 
 
   pipe$load(paste0(load_path,"/",m))
+
 
   return(pipe)
 
