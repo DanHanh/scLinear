@@ -21,7 +21,7 @@ Config/reticulate:
       list(package = "scikit-learn", pip=TRUE)
     )
   )
-Remotes: JiaLiVUMC/scMRMA
+Remotes: github::JiaLiVUMC/scMRMA
 Imports:
     devtools,
     ggplot2,
