@@ -119,6 +119,7 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' @param pipe A predictor object
 #' @param gex_train Gene expression assay
 #' @param adt_train ADT assay
+#' @param normalize Normalize GEX and ATD assay before fitting.
 #'
 #' @return pipe A trained predictor object
 #' @export
@@ -127,9 +128,24 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' \dontrun{
 #' fit_predictor(pipe = pipe, = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gex_train , adt_train){
+fit_predictor <- function(pipe, gex_train , adt_train, normalize = TRUE){
+
   gexp_matrix <- as.matrix(gex_train@counts)
   adt_matrix <- as.matrix(adt_train@counts)
+
+  if(normalize){
+    ## normalize data GEX
+    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
+    clusters <- scran::quickCluster(sce)
+    sce <- scran::computeSumFactors(sce, clusters=clusters)
+    sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
+    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
+    gexp_matrix <- base::log1p(gexp_matrix)
+  }
+
+  if(normalize){
+    adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
+  }
 
   gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
   adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))

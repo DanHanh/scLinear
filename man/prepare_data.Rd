@@ -5,12 +5,15 @@
 \title{Prepare data for modality prediction}
 \usage{
 prepare_data(
-  object = object,
+  object,
   remove_doublets = TRUE,
   low_qc_cell_removal = TRUE,
   anno_level = 2,
   samples = NULL,
   integrate_data = FALSE,
+  remove_empty_droplets = FALSE,
+  lower = 100,
+  FDR = 0.01,
   annotation_selfCluster = FALSE,
   resolution = 0.8,
   seed = 42

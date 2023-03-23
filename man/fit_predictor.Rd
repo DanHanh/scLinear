@@ -4,7 +4,7 @@
 \alias{fit_predictor}
 \title{Train a predictor object}
 \usage{
-fit_predictor(pipe, gex_train, adt_train)
+fit_predictor(pipe, gex_train, adt_train, normalize = TRUE)
 }
 \arguments{
 \item{pipe}{A predictor object}

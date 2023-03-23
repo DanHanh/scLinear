@@ -4,7 +4,7 @@
 \alias{evaluate_predictor}
 \title{Evaluate the adt predictor}
 \usage{
-evaluate_predictor(pipe, gexp_test, adt_test, do_log1p = TRUE)
+evaluate_predictor(pipe, gexp_test, adt_test, normalize = TRUE)
 }
 \arguments{
 \item{pipe}{A}
