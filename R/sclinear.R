@@ -126,7 +126,7 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #'
 #' @examples
 #' \dontrun{
-#' fit_predictor(pipe = pipe, = object@assays$RNA , adt_train = object@assays$ADT)
+#' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
 fit_predictor <- function(pipe, gex_train , adt_train, normalize = TRUE){
 
@@ -150,7 +150,7 @@ fit_predictor <- function(pipe, gex_train , adt_train, normalize = TRUE){
   gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
   adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
 
-  pipe$fit(gexp_matrix_py, adt_matrix_py)
+  pipe$fit(gexp_matrix_py, adt_matrix_py, gex_names = rownames(gexp_matrix), adt_names = rownames(adt_matrix))
 
   return(pipe)
 }
