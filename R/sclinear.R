@@ -193,8 +193,11 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   ## adt matrix
   adt <- as.matrix(predicted_adt[[1]])
   ## names of predicted proteins
-  adt_names <- predicted_adt[[2]] #$to_list()
-
+  if(typeof(predicted_adt[[2]]) == "environment"){
+    adt_names <- predicted_adt[[2]]$to_list()
+  }else{
+    adt_names <- predicted_adt[[2]]
+  }
   ## add
   colnames(adt) <- adt_names
   ## add initial cell names
