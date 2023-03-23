@@ -32,7 +32,6 @@ Imports:
     Seurat,
     tidyselect,
     pals,
-    scMRMA,
     scran,
     SingleCellExperiment,
     DropletUtils
