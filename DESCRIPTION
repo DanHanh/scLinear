@@ -21,6 +21,7 @@ Config/reticulate:
       list(package = "scikit-learn", pip=TRUE)
     )
   )
+Remotes: JiaLiVUMC/scMRMA
 Imports:
     devtools,
     ggplot2,
@@ -34,5 +35,6 @@ Imports:
     pals,
     scran,
     SingleCellExperiment,
-    DropletUtils
-Remotes: JiaLiVUMC/scMRMA
+    DropletUtils,
+    scMRMA
+
