@@ -1,9 +1,8 @@
 """High level functions for running the model prediction pipeline."""
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Union
 
 import anndata as ad
 import numpy as np
-from numpy import ndarray
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LinearRegression
 import warnings
@@ -15,7 +14,7 @@ class ADTPredictor:
 
     def __init__(
             self,
-            do_log1p: Optional[bool] = True,
+            do_log1p: Optional[bool] = False,
             n_components: Optional[int] = 300,
             do_tsvd_before_zscore: Optional[bool] = True,
     ):
@@ -24,7 +23,7 @@ class ADTPredictor:
         ----------
         do_log1p
             Logarithmize data?
-            Default 'True' expects non-logarithmized data.
+            Default 'False' expects logarithmized data.
         n_components
             Number of components to use for truncated SVD.
         do_tsvd_before_zscore
@@ -95,7 +94,7 @@ class ADTPredictor:
             self,
             gex_test: np.ndarray,
             gex_names: Optional[np.ndarray] = None,
-    ) -> Tuple[ndarray, ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Predict ADT from GEX.
         Parameters
@@ -183,26 +182,29 @@ class ADTPredictorKRREnsemble(ADTPredictor):
 
     def __init__(
             self,
-            do_log1p: Optional[bool] = True,
+            do_log1p: Optional[bool] = False,
             n_components: Optional[int] = 300,
             do_tsvd_before_zscore: Optional[bool] = True,
+            batch2idxs: Optional[Dict[Union[str, int], Tuple[int, int]]] = None
     ):
         """
         Parameters
         ----------
         do_log1p
             Logarithmize data?
-            Default 'True' expects non-logarithmized data.
+            Default 'False' expects logarithmized data.
         n_components
             Number of components to use for truncated SVD.
         do_tsvd_before_zscore
             Perform truncated SVD before Z-score normalization?
             Default 'True' works better for downstream training and prediction on data from a single dataset.
             Set to 'False' to extract more robust features that work well across datasets.
-
+        batch2idxs
+            Dictionary mapping batch labels to the start and end indices of the corresponding cells in the training data.
+            If not provided, the ensemble will be trained on random splits of the data.
         """
         super().__init__(do_log1p, n_components, do_tsvd_before_zscore)
-        self.model = KernelRidgeEnsemble()
+        self.model = KernelRidgeEnsemble(batch2idxs)
 
 
 class KernelRidgeEnsemble:
@@ -213,7 +215,8 @@ class KernelRidgeEnsemble:
     Code adapted from: https://github.com/openproblems-bio/neurips2021_multimodal_topmethods/tree/main/src/
     predict_modality/methods/Guanlab-dengkw
     """
-    def __init__(self):
+    def __init__(self, batch2idxs: Optional[Dict[Union[str, int], Tuple[int, int]]] = None):
+        self.batch2idxs = batch2idxs
         self.regressors = []
 
     def fit(self, X: np.ndarray, y: np.ndarray):
@@ -227,26 +230,32 @@ class KernelRidgeEnsemble:
             ADT matrix.
         """
         from tqdm.auto import tqdm
-        batch2idxs = {'s1d3': [9185, 14668], 's1d2': [4721, 9184], 's3d7': [55813, 66174], 's3d1': [37254, 45835], 's1d1': [0, 4720],
-         's2d1': [14669, 24021], 's2d4': [24022, 29047], 's3d6': [45836, 55812], 's2d5': [29048, 37253]}
-        batches_splits = [['s3d7', 's2d4', 's2d1', 's1d2'], ['s1d1', 's2d5', 's1d3', 's3d6', 's3d1'], ['s2d5', 's2d1', 's3d6', 's3d7'],
-         ['s1d3', 's1d2', 's1d1', 's2d4', 's3d1'], ['s1d2', 's2d4', 's3d7', 's1d1'],
-         ['s2d5', 's2d1', 's3d6', 's3d1', 's1d3'], ['s1d2', 's2d4', 's1d1', 's3d1'],
-         ['s3d6', 's1d3', 's3d7', 's2d1', 's2d5'], ['s2d4', 's1d1', 's2d5', 's1d2'],
-         ['s3d7', 's2d1', 's3d1', 's3d6', 's1d3']]
-        # Fit the model
-        for split in tqdm(batches_splits):
-            print("initializing")
-            # kernel = RBF(length_scale=10)
-            length_scale = 10
-            gamma = 1 / (2 * length_scale ** 2)
-            regressor = KernelRidge(alpha=0.2, kernel='rbf', gamma=gamma)
-            mask = np.zeros(X.shape[0], dtype=bool)
-            for batch in split:
-                mask[batch2idxs[batch][0]:batch2idxs[batch][1]] = True
-            print("fitting")
-            regressor.fit(X[mask, :], y[mask, :])
-            self.regressors.append(regressor)
+
+        if self.batch2idxs is None:
+            # Split the data into 9 batches
+            num_batches = 9
+            self.batch2idxs = dict()
+            for i in range(num_batches):
+                self.batch2idxs[i] = (X.shape[0] // num_batches * i,
+                                 X.shape[0] // num_batches * (i + 1) if i < num_batches - 1 else X.shape[0])
+
+        batches = list(self.batch2idxs.keys())
+        num_batches = len(batches)
+        # Fit the ensemble of 10 KRR models
+        for i in tqdm(range(5)):
+            np.random.shuffle(batches)
+            for j, split in enumerate([batches[:num_batches // 2], batches[num_batches // 2:]]):
+                # Fit a KRR model on half of the batches
+                print(f'Fitting KRR model {2*i+j} on batches {split}')
+                length_scale = 10
+                gamma = 1 / (2 * length_scale ** 2)
+                regressor = KernelRidge(alpha=0.2, kernel='rbf', gamma=gamma)
+                # regressor = LinearRegression()
+                mask = np.zeros(X.shape[0], dtype=bool)
+                for batch in split:
+                    mask[self.batch2idxs[batch][0]: self.batch2idxs[batch][1]] = True
+                regressor.fit(X[mask, :], y[mask, :])
+                self.regressors.append(regressor)
 
     def predict(self, X: np.ndarray):
         """
