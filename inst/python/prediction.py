@@ -259,8 +259,8 @@ class KernelRidgeEnsemble:
         -------
         ADT matrix.
         """
-        adt_pred = np.zeros((1000, 134), dtype=np.float32)
-        for regressor in self.regressors:
+        adt_pred = self.regressors[0].predict(X)
+        for regressor in self.regressors[1:]:
             adt_pred += regressor.predict(X)
         adt_pred /= len(self.regressors)
         np.clip(adt_pred, 0, None, out=adt_pred)
