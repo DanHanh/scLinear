@@ -29,26 +29,81 @@ You can install the development version of scLinear from [GitHub](https://github
 devtools::install_github("DanHanh/scLinear")
 ```
 
-## Example
+## Get example data
 
 This is a basic example which shows you how to solve a common problem:
 
-```r
+```{r}
 library(scLinear)
 
 ## get some example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
 # The download link: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3.
 # The File: "Feature / cell matrix (raw)"
 
-pbmc10k.data <- Seurat::Read10X(data.dir = "raw_feature_bc_matrix")
+pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix")
 rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
 pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
 pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
 Seurat::DefaultAssay(pbmc10k) <- "RNA"
 
+```
+
+
+## Prepare data
+
+```{r}
 pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster = TRUE, remove_empty_droplets = TRUE)
 
-## basic example code
+
+```
+
+
+## Train new model
+
+```{r}
+## create a training and test set
+set.seed(42)
+indx <- sample(1:length(colnames(pbmc10k)), size = length(colnames(pbmc10k)), replace = FALSE)
+pbmc10k_train <- pbmc10k[,indx[1:5000]]
+pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
+
+## create predictor
+pipe <- create_adt_predictor()
+
+## train predictor
+pipe <- fit_predictor(pipe = pipe, gexp_train = pbmc10k_train@assays[["RNA"]],
+              adt_train = pbmc10k_train@assays[["ADT"]],
+              normalize = TRUE)
+
+## evaluate predictor
+eval_res <- evaluate_predictor(pipe = pipe,
+                  gexp_test = pbmc10k_test@assays[["RNA"]],
+                  adt_test = pbmc10k_test@assays[["ADT"]],
+                  normalize = TRUE)
+
+## add predicted adt assay
+pbmc10k_test@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe, gexp = pbmc10k_test@assays[["RNA"]], normalize = TRUE)
+
+```
+
+
+
+## Use pretrained model
+
+```{r}
+library(scLinear)
+
+## subset pbmc data to only T-cells
+b_cells <- pbmc10k %>% base::subset(subset = cell_type == "T")
+
+pipe <- create_adt_predictor()
+pipe$gex_preprocessor$do_log1p <- FALSE
+## load pre-trained model (available models: all, bcell, tcell, nkcell)
+pipe <- load_pretrained_model(pipe, model = "all")
+
+pipe$gex_preprocessor$do_log1p <- FALSE
+evaluate_predictor(pipe, b_cells@assays$RNA, b_cells@assays$ADT, normalize = TRUE)
+
 
 ```
 
