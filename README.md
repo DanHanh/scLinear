@@ -50,6 +50,7 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
 <img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-3-3.png" width="100%" />
 
     #> [1] "Start clustering data"
+    #> [1] "Number of used dimensions for clustering: 30"
     #> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
     #> 
     #> Number of nodes: 6792
@@ -59,9 +60,6 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
     #> Maximum modularity in 10 random starts: 0.8736
     #> Number of communities: 15
     #> Elapsed time: 0 seconds
-
-<img src="man/figures/README-unnamed-chunk-3-4.png" width="100%" />
-
     #> [1] "Start cell type annotation"
     #> Pre-defined cell type database panglaodb will be used.
     #> Multi Resolution Annotation Started. 
@@ -71,7 +69,7 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
     #> Level 4 annotation started. 
     #> Uniform Resolution Annotation Started.
 
-<img src="man/figures/README-unnamed-chunk-3-5.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-4.png" width="100%" />
 
 ## Train new model
 
@@ -106,15 +104,15 @@ pbmc10k_test@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe, gexp = pbmc1
 library(scLinear)
 
 ## subset pbmc data to only T-cells
-b_cells <- pbmc10k %>% base::subset(subset = cell_type == "T")
+t_cells <- pbmc10k %>% base::subset(subset = cell_type == "T")
 
 pipe <- create_adt_predictor()
 pipe$gex_preprocessor$do_log1p <- FALSE
 ## load pre-trained model (available models: all, bcell, tcell, nkcell)
 pipe <- load_pretrained_model(pipe, model = "all")
-
 pipe$gex_preprocessor$do_log1p <- FALSE
-eval_res <- evaluate_predictor(pipe, b_cells@assays$RNA, b_cells@assays$ADT, normalize = TRUE)
+
+eval_res <- evaluate_predictor(pipe, t_cells@assays$RNA, t_cells@assays$ADT, normalize = TRUE)
 print(eval_res)
 #> [[1]]
 #> [1] 0.6037294
