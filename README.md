@@ -114,7 +114,8 @@ pipe$gex_preprocessor$do_log1p <- FALSE
 pipe <- load_pretrained_model(pipe, model = "all")
 
 pipe$gex_preprocessor$do_log1p <- FALSE
-evaluate_predictor(pipe, b_cells@assays$RNA, b_cells@assays$ADT, normalize = TRUE)
+eval_res <- evaluate_predictor(pipe, b_cells@assays$RNA, b_cells@assays$ADT, normalize = TRUE)
+print(eval_res)
 #> [[1]]
 #> [1] 0.6037294
 #> 
