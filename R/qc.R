@@ -70,11 +70,9 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 
   p <- ggplot2::ggplot(metadata, ggplot2::aes(x = samples, fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
     ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-    ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
+    ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of quality filtered cells by sample", fill = "Filtered") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
   base::print(p)
-
-
   }
 
   if(remove_cells){

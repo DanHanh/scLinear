@@ -19,6 +19,6 @@ Title
 }
 \examples{
 \dontrun{
-cluster_data()
+cluster_data(object, resolution = 0.8)
 }
 }

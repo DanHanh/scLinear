@@ -18,7 +18,7 @@ You can install the development version of scLinear from
 devtools::install_github("DanHanh/scLinear")
 ```
 
-## Example
+## Get example data
 
 This is a basic example which shows you how to solve a common problem:
 
@@ -29,15 +29,99 @@ library(scLinear)
 # The download link: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3.
 # The File: "Feature / cell matrix (raw)"
 
-pbmc10k.data <- Seurat::Read10X(data.dir = "raw_feature_bc_matrix")
+pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix")
 rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
 pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
 pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
 Seurat::DefaultAssay(pbmc10k) <- "RNA"
+```
 
+## Prepare data
+
+``` r
 pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster = TRUE, remove_empty_droplets = TRUE)
+#> [1] "Start remove doublets"
+```
 
-## basic example code
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+    #> [1] "Start low quality cell removal"
+
+<img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-3-3.png" width="100%" />
+
+    #> [1] "Start clustering data"
+    #> [1] "Number of used dimensions for clustering: 30"
+    #> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+    #> 
+    #> Number of nodes: 6792
+    #> Number of edges: 302688
+    #> 
+    #> Running Louvain algorithm...
+    #> Maximum modularity in 10 random starts: 0.8736
+    #> Number of communities: 15
+    #> Elapsed time: 0 seconds
+    #> [1] "Start cell type annotation"
+    #> Pre-defined cell type database panglaodb will be used.
+    #> Multi Resolution Annotation Started. 
+    #> Level 1 annotation started. 
+    #> Level 2 annotation started. 
+    #> Level 3 annotation started. 
+    #> Level 4 annotation started. 
+    #> Uniform Resolution Annotation Started.
+
+<img src="man/figures/README-unnamed-chunk-3-4.png" width="100%" />
+
+## Train new model
+
+``` r
+## create a training and test set
+set.seed(42)
+indx <- sample(1:length(colnames(pbmc10k)), size = length(colnames(pbmc10k)), replace = FALSE)
+pbmc10k_train <- pbmc10k[,indx[1:5000]]
+pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
+
+## create predictor
+pipe <- create_adt_predictor()
+
+## train predictor
+pipe <- fit_predictor(pipe = pipe, gexp_train = pbmc10k_train@assays[["RNA"]],
+              adt_train = pbmc10k_train@assays[["ADT"]],
+              normalize = TRUE)
+
+## evaluate predictor
+eval_res <- evaluate_predictor(pipe = pipe,
+                  gexp_test = pbmc10k_test@assays[["RNA"]],
+                  adt_test = pbmc10k_test@assays[["ADT"]],
+                  normalize = TRUE)
+
+## add predicted adt assay
+pbmc10k_test@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe, gexp = pbmc10k_test@assays[["RNA"]], normalize = TRUE)
+```
+
+## Use pretrained model
+
+``` r
+library(scLinear)
+
+## subset pbmc data to only T-cells
+t_cells <- pbmc10k %>% base::subset(subset = cell_type == "T")
+
+pipe <- create_adt_predictor()
+pipe$gex_preprocessor$do_log1p <- FALSE
+## load pre-trained model (available models: all, bcell, tcell, nkcell)
+pipe <- load_pretrained_model(pipe, model = "all")
+pipe$gex_preprocessor$do_log1p <- FALSE
+
+eval_res <- evaluate_predictor(pipe, t_cells@assays$RNA, t_cells@assays$ADT, normalize = TRUE)
+print(eval_res)
+#> [[1]]
+#> [1] 0.6037294
+#> 
+#> [[2]]
+#> [1] 0.8506006
+#> 
+#> [[3]]
+#> [1] 0.7471668
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`?
