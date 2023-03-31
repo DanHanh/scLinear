@@ -207,6 +207,8 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
 
   adt_assay <- Seurat::CreateAssayObject(data = adt)
 
+  Seurat::Key(adt_assay) <- "predictedadt_"
+
   return(adt_assay)
 }
 
