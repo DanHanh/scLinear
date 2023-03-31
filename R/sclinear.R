@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8)
+#' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
 prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
@@ -19,7 +19,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_empty_droplets){
 
-    object <- empty_drops(object = object, lower = lower, FDR = FDR)
+    object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples)
   }
 
   if(!("mito_percent" %in% names(object@meta.data))){
