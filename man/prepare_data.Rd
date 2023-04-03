@@ -30,6 +30,6 @@ Prepare data for modality prediction
 }
 \examples{
 \dontrun{
-sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8)
+sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 }
 }

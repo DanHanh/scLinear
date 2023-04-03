@@ -160,11 +160,6 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 #' }
 empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL){
 
-  object <- pbmc10k
-  length(colnames(object))
-  object@meta.data[["samples"]] <- c(rep("s1", times = 8420/2), rep("s2", times = 8420/2))
-
-
   object_split <- Seurat::SplitObject(object, split.by = samples)
 
   for (i in names(object_split)){
