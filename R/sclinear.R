@@ -186,7 +186,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
 
   gexp_matrix <- Matrix::t(gexp_matrix)
 
-  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+  gexp_matrix_py <- reticulate::r_to_py(as.matrix(gexp_matrix))
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
 
