@@ -82,8 +82,8 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 scLinear <- function(object = object, cell_type){
   object <- object %>% base::subset(subset = cell_type == "T")
 
-  gexp_matrix <- t(as.matrix(object@assays$RNA@counts))
-  adt_matrix <- t(as.matrix(object@assays$ADT@counts))
+  gexp_matrix <- t(object@assays$RNA@counts)
+  adt_matrix <- t(object@assays$ADT@counts)
 
 
 
@@ -130,8 +130,8 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' }
 fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
 
-  gexp_matrix <- as.matrix(gexp_train@counts)
-  adt_matrix <- as.matrix(adt_train@counts)
+  gexp_matrix <- gexp_train@counts
+  adt_matrix <- adt_train@counts
 
   if(normalize){
     ## normalize data GEX
@@ -184,14 +184,14 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   }
 
 
-  gexp_matrix <- t(as.matrix(gexp_matrix))
+  gexp_matrix <- t(gexp_matrix)
 
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
 
   ## adt matrix
-  adt <- as.matrix(predicted_adt[[1]])
+  adt <- predicted_adt[[1]]
   ## names of predicted proteins
   if(typeof(predicted_adt[[2]]) == "environment"){
     adt_names <- predicted_adt[[2]]$to_list()
@@ -240,8 +240,8 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
     t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
   }
   ## transpose to fit anndata format
-  p_adt_matrix <- t(as.matrix(p_adt@data))
-  t_adt_matrix <- t(as.matrix(t_adt@data))
+  p_adt_matrix <- t(p_adt@data)
+  t_adt_matrix <- t(t_adt@data)
 
   ## reorder adt text matrix to the same order as predicted adt
   t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
