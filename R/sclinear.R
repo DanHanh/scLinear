@@ -82,8 +82,8 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 scLinear <- function(object = object, cell_type){
   object <- object %>% base::subset(subset = cell_type == "T")
 
-  gexp_matrix <- t(object@assays$RNA@counts)
-  adt_matrix <- t(object@assays$ADT@counts)
+  gexp_matrix <- Matrix::t(object@assays$RNA@counts)
+  adt_matrix <- Matrix::t(object@assays$ADT@counts)
 
 
 
@@ -147,8 +147,8 @@ fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
     adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
   }
 
-  gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
-  adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
+  gexp_matrix_py <- reticulate::r_to_py(Matrix::t(gexp_matrix))
+  adt_matrix_py <- reticulate::r_to_py(Matrix::t(adt_matrix))
 
   pipe$fit(gexp_matrix_py, adt_matrix_py, gex_names = rownames(gexp_matrix), adt_names = rownames(adt_matrix))
 
@@ -184,7 +184,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   }
 
 
-  gexp_matrix <- t(gexp_matrix)
+  gexp_matrix <- Matrix::t(gexp_matrix)
 
   gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
 
@@ -203,7 +203,7 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   ## add initial cell names
   rownames(adt) <- rownames(gexp_matrix)
   ## transpose back for assay
-  adt <- t(adt)
+  adt <- Matrix::t(adt)
 
   adt_assay <- Seurat::CreateAssayObject(data = adt)
 
@@ -240,8 +240,8 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
     t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
   }
   ## transpose to fit anndata format
-  p_adt_matrix <- t(p_adt@data)
-  t_adt_matrix <- t(t_adt@data)
+  p_adt_matrix <- Matrix::t(p_adt@data)
+  t_adt_matrix <- Matrix::t(t_adt@data)
 
   ## reorder adt text matrix to the same order as predicted adt
   t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
