@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, cluster_with_integrated_data = FALSE, resolution = 0.8)
+#' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
 prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
@@ -19,7 +19,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_empty_droplets){
 
-    object <- empty_drops(object = object, lower = lower, FDR = FDR)
+    object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples)
   }
 
   if(!("mito_percent" %in% names(object@meta.data))){
@@ -82,8 +82,8 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 scLinear <- function(object = object, cell_type){
   object <- object %>% base::subset(subset = cell_type == "T")
 
-  gexp_matrix <- t(as.matrix(object@assays$RNA@counts))
-  adt_matrix <- t(as.matrix(object@assays$ADT@counts))
+  gexp_matrix <- Matrix::t(object@assays$RNA@counts)
+  adt_matrix <- Matrix::t(object@assays$ADT@counts)
 
 
 
@@ -130,8 +130,8 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' }
 fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
 
-  gexp_matrix <- as.matrix(gexp_train@counts)
-  adt_matrix <- as.matrix(adt_train@counts)
+  gexp_matrix <- gexp_train@counts
+  adt_matrix <- adt_train@counts
 
   if(normalize){
     ## normalize data GEX
@@ -147,8 +147,8 @@ fit_predictor <- function(pipe, gexp_train , adt_train, normalize = TRUE){
     adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
   }
 
-  gexp_matrix_py <- reticulate::r_to_py(t(gexp_matrix))
-  adt_matrix_py <- reticulate::r_to_py(t(adt_matrix))
+  gexp_matrix_py <- reticulate::r_to_py(Matrix::t(gexp_matrix))
+  adt_matrix_py <- reticulate::r_to_py(Matrix::t(adt_matrix))
 
   pipe$fit(gexp_matrix_py, adt_matrix_py, gex_names = rownames(gexp_matrix), adt_names = rownames(adt_matrix))
 
@@ -184,14 +184,14 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   }
 
 
-  gexp_matrix <- t(as.matrix(gexp_matrix))
+  gexp_matrix <- Matrix::t(gexp_matrix)
 
-  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
+  gexp_matrix_py <- reticulate::r_to_py(as.matrix(gexp_matrix))
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
 
   ## adt matrix
-  adt <- as.matrix(predicted_adt[[1]])
+  adt <- predicted_adt[[1]]
   ## names of predicted proteins
   if(typeof(predicted_adt[[2]]) == "environment"){
     adt_names <- predicted_adt[[2]]$to_list()
@@ -203,9 +203,11 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
   ## add initial cell names
   rownames(adt) <- rownames(gexp_matrix)
   ## transpose back for assay
-  adt <- t(adt)
+  adt <- Matrix::t(adt)
 
   adt_assay <- Seurat::CreateAssayObject(data = adt)
+
+  Seurat::Key(adt_assay) <- "predictedadt_"
 
   return(adt_assay)
 }
@@ -238,8 +240,8 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
     t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
   }
   ## transpose to fit anndata format
-  p_adt_matrix <- t(as.matrix(p_adt@data))
-  t_adt_matrix <- t(as.matrix(t_adt@data))
+  p_adt_matrix <- Matrix::t(p_adt@data)
+  t_adt_matrix <- Matrix::t(t_adt@data)
 
   ## reorder adt text matrix to the same order as predicted adt
   t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
