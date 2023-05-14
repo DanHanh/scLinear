@@ -342,7 +342,9 @@ class ADTPredictorBabel(ADTPredictor):
         super().__init__(do_log1p, n_components, do_tsvd_before_zscore)
         if n_components == -1:
             # Babel does not perform dimensionality reduction by default
-            self.gex_preprocessor.tsvd = IdentityTransformer()
+            # self.gex_preprocessor.tsvd = IdentityTransformer()
+            # If using negative binomial loss for GEX, z-score should not be performed
+            self.gex_preprocessor = IdentityTransformer()
 
         # Babel arguments
         parser = argparse.ArgumentParser()
@@ -353,13 +355,15 @@ class ADTPredictorBabel(ADTPredictor):
         parser.add_argument("-m", "--model_folder", default="./models")
         parser.add_argument("--outdir", "-o", default="./logs", help="Directory to output to")
         parser.add_argument("--lossweight", type=float, default=1., help="Relative loss weight")
-        parser.add_argument("--lr", "-l", type=float, default=0.01, help="Learning rate")
+        # parser.add_argument("--lr", "-l", type=float, default=0.01, help="Learning rate")
+        parser.add_argument("--lr", "-l", type=float, default=0.0001, help="Learning rate")
         parser.add_argument("--batchsize", "-b", type=int, default=64, help="Batch size")
         parser.add_argument("--hidden", type=int, default=64, help="Hidden dimensions")
         parser.add_argument("--earlystop", type=int, default=20, help="Early stopping after N epochs")
         parser.add_argument("--naive", "-n", action="store_true", help="Use a naive model instead of lego model")
         parser.add_argument("--resume", action="store_true")
-        parser.add_argument("--max_epochs", type=int, default=500)
+        # parser.add_argument("--max_epochs", type=int, default=500)
+        parser.add_argument("--max_epochs", type=int, default=20)
         args = parser.parse_args([])
         args.resume = True
         torch.set_num_threads(args.cpus)
@@ -418,10 +422,12 @@ class ADTPredictorBabel(ADTPredictor):
                 warnings.filterwarnings("ignore", category=UserWarning)
                 gex_train_test = ad.concat((gex_train, gex_test), join='outer')
             self.gex_preprocessor.fit_transform(gex_train_test)
-            X_train = gex_train_test.obsm['X_pca'][:gex_train.shape[0]]
+            # X_train = gex_train_test.obsm['X_pca'][:gex_train.shape[0]]
+            X_train = gex_train_test.X[:gex_train.shape[0]]
         else:
             self.gex_preprocessor.fit_transform(gex_train)
-            X_train = gex_train.obsm['X_pca']
+            # X_train = gex_train.obsm['X_pca']
+            X_train = gex_train.X
 
         # Create the Babel model, requires the input and output dimensions
         # from dance.utils import
@@ -430,7 +436,7 @@ class ADTPredictorBabel(ADTPredictor):
         import torch
         self.model = BabelWrapper(self.babel_args, dim_in=X_train.shape[1], dim_out=adt_train.shape[1])
         # Fit the model
-        self.model.fit(torch.from_numpy(X_train), torch.from_numpy(adt_train), max_epochs=2)
+        self.model.fit(torch.from_numpy(X_train), torch.from_numpy(adt_train), max_epochs=self.babel_args.max_epochs)
 
     def predict(
             self,
@@ -479,7 +485,8 @@ class ADTPredictorBabel(ADTPredictor):
         # Preprocess GEX data
         gex_test = ad.AnnData(gex_test, dtype=gex_test.dtype)
         self.gex_preprocessor.transform(gex_test)
-        X_test = gex_test.obsm['X_pca']
+        # X_test = gex_test.obsm['X_pca']
+        X_test = gex_test.X
 
         # Predict ADT data
         import torch
