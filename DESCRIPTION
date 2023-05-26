@@ -20,8 +20,7 @@ Config/reticulate:
       list(package = "numpy", pip=TRUE),
       list(package = "scikit-learn", pip=TRUE),
       list(package = "scater", pipe = TRUE),
-      list(package = "scran", pipe = TRUE)
-      
+      list(package = "scran", pipe = TRUE) 
     )
   )
 Remotes: github::JiaLiVUMC/scMRMA
