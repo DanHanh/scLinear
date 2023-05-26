@@ -33,10 +33,10 @@ Imports:
 Config/reticulate:
   list(
     packages = list(
-      list(package = "'scanpy[leiden]'", pip=TRUE),
-      list(package = "numpy", pip=TRUE),
-      list(package = "scikit-learn", pip=TRUE),
-      list(package = "scater", pipe = TRUE),
-      list(package = "scran", pipe = TRUE) 
+      list(package = "'scanpy[leiden]'", pip=FALSE),
+      list(package = "numpy", pip=FALSE),
+      list(package = "scikit-learn", pip=FALSE),
+      list(package = "scater", pipe = FALSE),
+      list(package = "scran", pipe = FALSE) 
     )
   )
