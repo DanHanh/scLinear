@@ -230,12 +230,12 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
 
   predicted_adt <- adt_predict(pipe, gexp_test, normalize = normalize)
 
-  ## subset to only comone features
+  ## subset to only common features
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
   t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
 
-  ### CLR transform data test data
+  ### CLR transform test data
   if(normalize){
     t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
   }

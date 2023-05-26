@@ -18,7 +18,10 @@ Config/reticulate:
     packages = list(
       list(package = "'scanpy[leiden]'", pip=TRUE),
       list(package = "numpy", pip=TRUE),
-      list(package = "scikit-learn", pip=TRUE)
+      list(package = "scikit-learn", pip=TRUE),
+      list(package = "scater", pipe = TRUE),
+      list(package = "scran", pipe = TRUE)
+      
     )
   )
 Remotes: github::JiaLiVUMC/scMRMA
