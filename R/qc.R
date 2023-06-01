@@ -78,7 +78,8 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 
   if(remove_cells){
     ## remove filtered cells
-    object <- base::subset(object, subset = mad_filtered == "FALSE")
+    #object <- base::subset(object, subset = mad_filtered == "FALSE")
+    object <- object[, object@meta.data$mad_filtered == "FALSE"]
     object@meta.data[["mad_filtered"]] <- NULL
   }
 
