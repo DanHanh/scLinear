@@ -163,6 +163,7 @@ cluster_data <- function(object, resolution = 0.8, npcs = NULL){
   }else{
     object <- object %>% Seurat::NormalizeData() %>%
                           Seurat::ScaleData() %>%
+                          Seurat::FindVariableFeatures() %>%
                           Seurat::RunPCA(assay = default_assay, npcs = 100)
   }
 

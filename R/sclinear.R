@@ -64,11 +64,10 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
     object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL)
   }
 
-
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
   base::print(p1)
 
-  return(object)
+  return(list(object = object, plots = plot_list))
 
 }
 
