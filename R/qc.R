@@ -158,19 +158,22 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 #' \dontrun{
 #' empty_drops(object = object, lower = 100, FDR = 0.01)
 #' }
-empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL){
+empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL, assay = "RNA"){
 
-  object_split <- Seurat::SplitObject(object, split.by = samples)
-
-  for (i in names(object_split)){
-    print(i)
-
-    e.out <- DropletUtils::emptyDrops(object_split[[i]]@assays$RNA@counts, lower = lower)
+  if(is.null(samples)){
+    e.out <- DropletUtils::emptyDrops(object@assays$RNA@counts, lower = lower)
     is.cell <- e.out$FDR <= FDR
-    object_split[[i]] <- object_split[[i]][, which(is.cell)]
-
+    object <- object[, which(is.cell)]
+  }else{
+    object_split <- Seurat::SplitObject(object, split.by = samples)
+    for (i in names(object_split)){
+      print(i)
+      e.out <- DropletUtils::emptyDrops(object_split[[i]]@assays$RNA@counts, lower = lower)
+      is.cell <- e.out$FDR <= FDR
+      object_split[[i]] <- object_split[[i]][, which(is.cell)]
+    }
+    object <- merge(object_split[[1]], y = object_split[2:length(object_split)])
   }
 
-  object <- merge(object_split[[1]], y = object_split[2:length(object_split)])
   return(object)
 }
