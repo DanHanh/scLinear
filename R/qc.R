@@ -138,7 +138,8 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 
   if(remove_cells){
     ## remove doublets
-    object <- base::subset(object, subset = scDblFinder.class == "singlet")
+    #object <- base::subset(object, subset = scDblFinder.class == "singlet")
+    object <- object[, object@meta.data$scDblFinder.class == "singlet"]
 
     ## remove unnecessary information from Seurat object
     object@meta.data[["scDblFinder.class"]] <- NULL
