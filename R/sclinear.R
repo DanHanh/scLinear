@@ -50,7 +50,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(integrate_data){
     print("Start integrate data")
-    object <- integrate_samples(object, samples = samples, resolution = resolution)
+    object <- integrate_samples(object, samples = samples)
   }
 
   print("Start clustering data")
