@@ -61,7 +61,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
       ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     base::print(p)
 
   }else{
@@ -71,7 +71,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
   p <- ggplot2::ggplot(metadata, ggplot2::aes(x = samples, fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
     ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
     ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of quality filtered cells by sample", fill = "Filtered") +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
   base::print(p)
   }
 
@@ -81,7 +81,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
     object@meta.data[["mad_filtered"]] <- NULL
   }
 
-  return(object)
+  return(list(object = object, plots = p))
 }
 
 
@@ -117,7 +117,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
       ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     base::print(p)
 
   }else{
@@ -127,7 +127,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = scDblFinder.sample, fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
       ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     base::print(p)
 }
   ## add singlet/doublet information to initial Seurat object
@@ -141,7 +141,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
     object@meta.data[["scDblFinder.class"]] <- NULL
   }
 
-  return(object)
+  return(list(object = object, plots = p))
 }
 
 
