@@ -97,7 +97,7 @@ visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
 #' \dontrun{
 #' #' integrate_samples()
 #' }
-integrate_samples <- function(object, method = "rpca", samples = "samples", resolution  = 0.8){
+integrate_samples <- function(object, method = "rpca", samples = "samples"){
 
   if(typeof(object) == "list"){
     object_list <- object
@@ -153,7 +153,7 @@ integrate_samples <- function(object, method = "rpca", samples = "samples", reso
 #' \dontrun{
 #' cluster_data(object, resolution = 0.8)
 #' }
-cluster_data <- function(object, resolution = 0.8){
+cluster_data <- function(object, resolution = 0.8, npcs = NULL){
 
   default_assay <- Seurat::DefaultAssay(object)
 
@@ -166,14 +166,17 @@ cluster_data <- function(object, resolution = 0.8){
                           Seurat::RunPCA(assay = default_assay, npcs = 100)
   }
 
-  ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+  if(is.null(npcs)){
+    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+  }else{
+    ndims <- npcs
+  }
+
   print(paste0("Number of used dimensions for clustering: ",ndims))
   object <- object %>% Seurat::RunUMAP(dims = 1:ndims) %>% Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca") %>%
               Seurat::FindClusters(resolution = resolution)
 
-  #p <- visualize_data(object, group.by = "seurat_clusters")
   return(object)
-
 }
 
 

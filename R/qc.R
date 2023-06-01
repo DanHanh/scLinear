@@ -3,11 +3,12 @@
 #' Remove low quality cells based on the median absolute deviation.
 #'
 #' @param object Seurat object
-#' @param nmads Median absolute deviation that should be counted as outliner
-#' @param type If upper, lower , both boundaries should be used for filtering
+#' @param nmads Median absolute deviation that should be counted as outlier
+#' @param type If upper, lower , both boundaries should be used for filtering (for nCount_RNA and nFeature_RNA)
 #' @param mttype If upper, lower , both boundaries should be used for mitochondrial percent filtering
+#' @param remove_cells should the low quality cell be removed before returning the object
 #'
-#' @return object Seurat object
+#' @return list containint a Seurat object and quality plots
 #' @export
 #'
 #' @examples
@@ -94,8 +95,10 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 #'
 #' @param object A Seurat object
 #' @param samples meta.data information with  the sequencing samples
+#' @param remove_cells should the low quality cell be removed before returning the object
+#' @param seed Seed that should be used
 #'
-#' @return object A Seurat object with removed doublets
+#' @return list containing Seurat object and quality plots
 #' @export
 #'
 #' @examples
@@ -148,17 +151,18 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 #' Remove empty droplets
 #'
 #' @param object A Seurat object
-#' @param lower A
-#' @param FDR A
+#' @param lower Lower boundery to use cells as empty droplets
+#' @param FDR False discovery rate used to remove empty droplets
+#' @param samples meta.data information with  the sequencing samples
 #'
-#' @return object A Seurat object
+#' @return list containing Seurat object and quality plots
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' empty_drops(object = object, lower = 100, FDR = 0.01)
 #' }
-empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL, assay = "RNA"){
+empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL){
 
   if(is.null(samples)){
     e.out <- DropletUtils::emptyDrops(object@assays$RNA@counts, lower = lower)

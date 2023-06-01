@@ -15,31 +15,38 @@
 prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
   set.seed(seed)
 
+  plot_list <- list()
+
   Seurat::DefaultAssay(object) <- "RNA"
 
   if(remove_empty_droplets){
-
     object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples)
+    plot_list[["empty_dropts"]] <- object[[2]]
+    object <- object[[1]]
   }
 
   if(!("mito_percent" %in% names(object@meta.data))){
     object$mito_percent <- Seurat::PercentageFeatureSet(object, pattern = "^MT-")
   }
 
-
-  object <- object %>% Seurat::NormalizeData() %>%
-                        Seurat::FindVariableFeatures() %>%
-                        Seurat::ScaleData()
-
   if(remove_doublets){
     print("Start remove doublets")
     object <- object %>% remove_doublets(samples = samples)
+    plot_list[["doublets"]] <- object[[2]]
+    object <- object[[1]]
   }
 
   if(low_qc_cell_removal){
     print("Start low quality cell removal")
     object <- object %>% mad_filtering(samples = samples)
+    plot_list[["low_qc_cells"]] <- object[[2]]
+    object <- object[[1]]
   }
+
+
+  # object <- object %>% Seurat::NormalizeData() %>%
+  #   Seurat::FindVariableFeatures() %>%
+  #   Seurat::ScaleData()
 
   if(integrate_data){
     print("Start integrate data")
@@ -60,8 +67,6 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
   base::print(p1)
-
-
 
   return(object)
 
