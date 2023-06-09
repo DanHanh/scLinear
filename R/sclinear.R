@@ -232,17 +232,18 @@ adt_predict <- function(pipe, gexp, normalize = TRUE){
 #' }
 evaluate_predictor <- function(pipe, gexp_test, adt_test, normalize = TRUE){
 
+  ### CLR transform test data
+  if(normalize){
+    adt_test <- Seurat::NormalizeData(adt_test, normalization.method = "CLR", margin = 2)
+  }
+
+
   predicted_adt <- adt_predict(pipe, gexp_test, normalize = normalize)
 
   ## subset to only common features
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
   t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
-
-  ### CLR transform test data
-  if(normalize){
-    t_adt <- Seurat::NormalizeData(t_adt, normalization.method = "CLR", margin = 2)
-  }
   ## transpose to fit anndata format
   p_adt_matrix <- Matrix::t(p_adt@data)
   t_adt_matrix <- Matrix::t(t_adt@data)
