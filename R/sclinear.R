@@ -132,13 +132,13 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' \dontrun{
 #' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gexp_train , adt_train, slot = "counts", normalize = TRUE){
+fit_predictor <- function(pipe, gexp_train , adt_train, slot = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
 
 
   gexp_matrix <- Seurat::GetAssayData(gexp_train, slot = slot)
   adt_matrix <- Seurat::GetAssayData(adt_train, slot = slot)
 
-  if(normalize){
+  if(normalize_gex){
     ## normalize data GEX
     sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
     clusters <- scran::quickCluster(sce)
@@ -148,7 +148,7 @@ fit_predictor <- function(pipe, gexp_train , adt_train, slot = "counts", normali
     gexp_matrix <- base::log1p(gexp_matrix)
   }
 
-  if(normalize){
+  if(normalize_adt){
     adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
   }
 
@@ -231,15 +231,15 @@ adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", normalize = TRUE){
+evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
 
   ### CLR transform test data
-  if(normalize){
+  if(normalize_adt){
     adt_test <- Seurat::NormalizeData(adt_test, normalization.method = "CLR", margin = 2)
   }
 
 
-  predicted_adt <- adt_predict(pipe, gexp_test, slot = slot,  normalize = normalize)
+  predicted_adt <- adt_predict(pipe, gexp_test, slot = slot,  normalize = normalize_gex)
 
   ## subset to only common features
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
