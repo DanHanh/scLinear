@@ -132,11 +132,11 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' \dontrun{
 #' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gexp_train , adt_train, slot = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
+fit_predictor <- function(pipe, gexp_train , adt_train, slot_gex = "counts", slot_adt = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
 
 
-  gexp_matrix <- Seurat::GetAssayData(gexp_train, slot = slot)
-  adt_matrix <- Seurat::GetAssayData(adt_train, slot = slot)
+  gexp_matrix <- Seurat::GetAssayData(gexp_train, slot = slot_gex)
+  adt_matrix <- Seurat::GetAssayData(adt_train, slot = slot_adt)
 
   if(normalize_gex){
     ## normalize data GEX
