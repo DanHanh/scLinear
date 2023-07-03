@@ -11,6 +11,7 @@ mad_filtering(
   type = "both",
   mttype = "higher",
   remove_cells = TRUE,
+  print_plots = TRUE,
   ...
 )
 }

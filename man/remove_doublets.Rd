@@ -9,6 +9,7 @@ remove_doublets(
   samples = NULL,
   remove_cells = TRUE,
   seed = 42,
+  print_plots = TRUE,
   ...
 )
 }

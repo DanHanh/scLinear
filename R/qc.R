@@ -16,7 +16,7 @@
 #' sobj <- mad_filtering(sobj)
 #' }
 
-mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, ...){
+mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, ...){
 
   ##
   if(is.null(samples)){
@@ -56,14 +56,14 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
     ggplot2::scale_color_manual(values = c("darkgreen", "darkred")) +
     ggplot2::scale_x_continuous(trans='log10') +
     ggplot2::scale_y_continuous(trans='log10')
-  base::print(p)
+  if(print_plots){base::print(p)}
 
   if(is.null(samples)){
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
+      ggplot2::geom_text(stat = "count", vjust = -0.5) + ggplot2::labs(title = "Number of filtered cells by sample", fill = "Filtered") +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
-    base::print(p)
+    if(print_plots){base::print(p)}
 
   }else{
     metadata <- cbind(metadata, data.frame(samples = object@meta.data %>% dplyr::pull(samples)))
@@ -71,9 +71,9 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 
   p <- ggplot2::ggplot(metadata, ggplot2::aes(x = samples, fill = Filtered, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
     ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-    ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of quality filtered cells by sample", fill = "Filtered") +
+    ggplot2::geom_text(stat = "count", vjust = -0.5) + ggplot2::labs(title = "Number of quality filtered cells by sample", fill = "Filtered") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
-  base::print(p)
+  if(print_plots){base::print(p)}
   }
 
   if(remove_cells){
@@ -106,7 +106,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
 #' remove_doublets(object = object, samples = "batch")
 #' }
 
-remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE ,seed = 42, ...){
+remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE ,seed = 42, print_plots = TRUE, ...){
   set.seed(seed = seed)
 
   #### remove doublets with scDblFinder
@@ -131,7 +131,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
       ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
-    base::print(p)
+    if(print_plots){base::print(p)}
 }
   ## add singlet/doublet information to initial Seurat object
   object[["scDblFinder.class"]] <- sce@colData@listData[["scDblFinder.class"]]
@@ -171,7 +171,6 @@ empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL){
   }else{
     object_split <- Seurat::SplitObject(object, split.by = samples)
     for (i in names(object_split)){
-      print(i)
       e.out <- DropletUtils::emptyDrops(object_split[[i]]@assays$RNA@counts, lower = lower)
       is.cell <- e.out$FDR <= FDR
       object_split[[i]] <- object_split[[i]][, which(is.cell)]

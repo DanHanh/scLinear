@@ -17,7 +17,8 @@ prepare_data(
   annotation_selfCluster = FALSE,
   resolution = 0.8,
   seed = 42,
-  return_plots = FALSE
+  return_plots = FALSE,
+  print_plots = TRUE
 )
 }
 \arguments{

@@ -54,6 +54,15 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 
 ```
 
+## The simplest way to use scLinear is to use the scLinear() function directly
+
+```{r}
+## The scLinear function uses the counts slot from the RNA assay to predict the ADT assay. The functions performs the default preprocessing steps and returns a Seurat object with the added "predicted_ADT" assay.
+
+pbmc10k_adt_predicted <- scLinear(pbmc10k)
+
+```
+
 
 ## Prepare data
 
@@ -92,6 +101,8 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   normalize_gex = TRUE,
                   normalize_adt = TRUE)
 
+print(eval_res)
+
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
  						gexp = pbmc10k_test@assays[["RNA"]],
@@ -104,7 +115,8 @@ pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 
 ```{r}
 
-## load pre-trained model (available models: all, bcell, tcell, nkcell)
+## Load pre-trained model (available models: all, bcell, tcell, nkcell)
+# if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.
 pipe <- create_adt_predictor()
 pipe <- load_pretrained_model(pipe, model = "all")
 
@@ -114,6 +126,10 @@ eval_res <- evaluate_predictor(pipe,
  				normalize_gex = TRUE,
  				normalize_adt = TRUE)
 print(eval_res)
+
+pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+ 						gexp = pbmc10k@assays[["RNA"]],
+ 						normalize = TRUE)
 
 ```
 

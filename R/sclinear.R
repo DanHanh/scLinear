@@ -12,7 +12,7 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE){
   set.seed(seed)
 
   plot_list <- list()
@@ -31,14 +31,14 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_doublets){
     print("Start remove doublets")
-    object <- object %>% remove_doublets(samples = samples)
+    object <- object %>% remove_doublets(samples = samples, print_plots = print_plots)
     plot_list[["doublets"]] <- object[[2]]
     object <- object[[1]]
   }
 
   if(low_qc_cell_removal){
     print("Start low quality cell removal")
-    object <- object %>% mad_filtering(samples = samples)
+    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots)
     plot_list[["low_qc_cells"]] <- object[[2]]
     object <- object[[1]]
   }
@@ -65,7 +65,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
   }
 
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
-  base::print(p1)
+  if(print_plots){base::print(p1)}
 
   if(return_plots){
     return_object <- list(object = object, plots = plot_list)
@@ -81,7 +81,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
 #' Predict modalities based on gene expression data
 #'
-#' @param object
+#' @param object A Seurat object
 #'
 #' @return object A Seurat object containing additional single cell modalities
 #' @export
@@ -90,21 +90,31 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 #' \dontrun{
 #' sobj <- scLinear(object = sobj)
 #' }
-scLinear <- function(object = object, cell_type){
-  object <- object %>% base::subset(subset = cell_type == "T")
+scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE){
+  set.seed(seed)
+  object <- prepare_data(object,
+                         remove_doublets = remove_doublets,
+                         low_qc_cell_removal = low_qc_cell_removal,
+                         anno_level = anno_level,
+                         samples = samples,
+                         integrate_data = integrate_data,
+                         remove_empty_droplets = remove_empty_droplets,
+                         lower = lower,
+                         FDR = FDR,
+                         annotation_selfCluster = annotation_selfCluster,
+                         resolution = resolution,
+                         seed = seed,
+                         return_plots = FALSE,
+                         print_plots = print_plots)
 
-  gexp_matrix <- Matrix::t(object@assays$RNA@counts)
-  adt_matrix <- Matrix::t(object@assays$ADT@counts)
+  pipe <- create_adt_predictor()
+  pipe <- load_pretrained_model(pipe, model = model)
 
+  object@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+                                                  gexp = Seurat::GetAssay(object, assay = assay_name),
+                                                  normalize = TRUE)
 
-
-  gexp_matrix_py <- reticulate::r_to_py(gexp_matrix)
-  adt_matrix_py <- reticulate::r_to_py(adt_matrix)
-
-  pipe <- ADTPredictor(do_log1p = FALSE)
-  pipe$fit(gexp_matrix_py, adt_matrix)
-  adt_pred <- pipe$predict(gexp_matrix_py)
-  evaluate(adt_pred, adt_matrix_py)
+  return(object)
 
 }
 
