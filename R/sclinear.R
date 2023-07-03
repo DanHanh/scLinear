@@ -275,7 +275,7 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 #' }
 load_pretrained_model <- function(pipe, model = "all"){
 
-  load_path <-  base::system.file("python",package = "scLinear")
+  load_path <-  base::system.file("pretrained_models",package = "scLinear")
 
 
   m <- switch(model,
