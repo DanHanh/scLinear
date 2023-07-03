@@ -4,7 +4,7 @@
 \alias{adt_predict}
 \title{Predict ADT values from gene expression}
 \usage{
-adt_predict(pipe, gexp, normalize = TRUE)
+adt_predict(pipe, gexp, slot = "counts", normalize = TRUE)
 }
 \arguments{
 \item{pipe}{A}

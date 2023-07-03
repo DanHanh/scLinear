@@ -9,10 +9,12 @@ load_pretrained_model(pipe, model = "all")
 \arguments{
 \item{pipe}{A pipe}
 
-\item{model}{Choose pretrained model: all, bcells, tcells, nkcells}
+\item{model}{Choose a pre-trained model to load. The pretraines models were
+trained on the NeurIPS data. In most cases we would recommend to use the model ("all") trained on all
+cell types. models available: all, bcells, tcells, nkcells.}
 }
 \value{
-pipe
+pipe Returns the pipe with a loaded pre-trained model.
 }
 \description{
 Load a pretrained model

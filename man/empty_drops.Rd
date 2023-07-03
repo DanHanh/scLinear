@@ -9,12 +9,14 @@ empty_drops(object, lower = 100, FDR = 0.01, samples = NULL)
 \arguments{
 \item{object}{A Seurat object}
 
-\item{lower}{A}
+\item{lower}{Lower boundery to use cells as empty droplets}
 
-\item{FDR}{A}
+\item{FDR}{False discovery rate used to remove empty droplets}
+
+\item{samples}{meta.data information with  the sequencing samples}
 }
 \value{
-object A Seurat object
+list containing Seurat object and quality plots
 }
 \description{
 Remove empty droplets

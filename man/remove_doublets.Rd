@@ -16,9 +16,13 @@ remove_doublets(
 \item{object}{A Seurat object}
 
 \item{samples}{meta.data information with  the sequencing samples}
+
+\item{remove_cells}{should the low quality cell be removed before returning the object}
+
+\item{seed}{Seed that should be used}
 }
 \value{
-object A Seurat object with removed doublets
+list containing Seurat object and quality plots
 }
 \description{
 Remove Heterotypic doublets from sequencing data

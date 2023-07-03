@@ -264,9 +264,11 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 #' Load a pretrained model
 #'
 #' @param pipe A pipe
-#' @param model Choose pretrained model: all, bcells, tcells, nkcells
+#' @param model Choose a pre-trained model to load. The pretraines models were
+#' trained on the NeurIPS data. In most cases we would recommend to use the model ("all") trained on all
+#' cell types. models available: all, bcells, tcells, nkcells.
 #'
-#' @return pipe
+#' @return pipe Returns the pipe with a loaded pre-trained model.
 #' @export
 #'
 #' @examples
@@ -277,16 +279,13 @@ load_pretrained_model <- function(pipe, model = "all"){
 
   load_path <-  base::system.file("pretrained_models",package = "scLinear")
 
-
   m <- switch(model,
            "all" = "ADTPredictor_neuripstrain_alltypes.joblib",
            "bcell" = "ADTPredictor_neuripstrain_Bcells.joblib",
            "nkcell" = "ADTPredictor_neuripstrain_NKcells.joblib",
            "tcell" = "ADTPredictor_neuripstrain_Tcells.joblib")
 
-
   pipe$load(paste0(load_path,"/",m))
-
 
   return(pipe)
 

@@ -17,14 +17,16 @@ mad_filtering(
 \arguments{
 \item{object}{Seurat object}
 
-\item{nmads}{Median absolute deviation that should be counted as outliner}
+\item{nmads}{Median absolute deviation that should be counted as outlier}
 
-\item{type}{If upper, lower , both boundaries should be used for filtering}
+\item{type}{If upper, lower , both boundaries should be used for filtering (for nCount_RNA and nFeature_RNA)}
 
 \item{mttype}{If upper, lower , both boundaries should be used for mitochondrial percent filtering}
+
+\item{remove_cells}{should the low quality cell be removed before returning the object}
 }
 \value{
-object Seurat object
+list containint a Seurat object and quality plots
 }
 \description{
 Remove low quality cells based on the median absolute deviation.
