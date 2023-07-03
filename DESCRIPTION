@@ -17,7 +17,6 @@ biocViews:
 Imports:
     devtools,
     ggplot2,
-    igraph,
     intrinsicDimension,
     magrittr,
     reticulate,
