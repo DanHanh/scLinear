@@ -263,12 +263,13 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
   t_adt_matrix_py<- reticulate::r_to_py(t_adt_matrix)
 
   ev_res <- evaluate$evaluate(p_adt_matrix_py, t_adt_matrix_py)
+  return_df <- data.frame(RMSE = ev_res[[1]], Pearson = ev_res[[2]], Spearman = ev_res[[3]])
 
-  return(ev_res)
+  return(return_df)
 }
 
 
-#' Load a pretrained model
+#' Load a pre-trained model
 #'
 #' @param pipe A pipe
 #' @param model Choose a pre-trained model to load. The pretraines models were

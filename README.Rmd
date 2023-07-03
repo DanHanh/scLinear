@@ -103,7 +103,6 @@ pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 ## Use a pre-trained model
 
 ```{r}
-library(scLinear)
 
 ## load pre-trained model (available models: all, bcell, tcell, nkcell)
 pipe <- create_adt_predictor()

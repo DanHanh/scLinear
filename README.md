@@ -109,8 +109,6 @@ pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 ## Use a pre-trained model
 
 ``` r
-library(scLinear)
-
 ## load pre-trained model (available models: all, bcell, tcell, nkcell)
 pipe <- create_adt_predictor()
 pipe <- load_pretrained_model(pipe, model = "all")
@@ -121,12 +119,6 @@ eval_res <- evaluate_predictor(pipe,
                 normalize_gex = TRUE,
                 normalize_adt = TRUE)
 print(eval_res)
-#> [[1]]
-#> [1] 0.8107419
-#> 
-#> [[2]]
-#> [1] 0.8534997
-#> 
-#> [[3]]
-#> [1] 0.7175379
+#>        RMSE   Pearson  Spearman
+#> 1 0.8107419 0.8534997 0.7175379
 ```

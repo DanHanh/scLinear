@@ -2,7 +2,7 @@
 % Please edit documentation in R/sclinear.R
 \name{load_pretrained_model}
 \alias{load_pretrained_model}
-\title{Load a pretrained model}
+\title{Load a pre-trained model}
 \usage{
 load_pretrained_model(pipe, model = "all")
 }
@@ -17,7 +17,7 @@ cell types. models available: all, bcells, tcells, nkcells.}
 pipe Returns the pipe with a loaded pre-trained model.
 }
 \description{
-Load a pretrained model
+Load a pre-trained model
 }
 \examples{
 \dontrun{
