@@ -14,16 +14,16 @@ Suggests:
 Config/testthat/edition: 3
 Remotes: github::JiaLiVUMC/scMRMA
 biocViews:
-    Seurat
 Imports:
     devtools,
-    BiocManager,
     ggplot2,
+    igraph,
     intrinsicDimension,
     magrittr,
     reticulate,
     scater,
     scDblFinder,
+    Seurat,
     tidyselect,
     pals,
     scran,
