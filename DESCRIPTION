@@ -29,7 +29,8 @@ Imports:
     SingleCellExperiment,
     DropletUtils,
     Matrix,
-    scMRMA
+    scMRMA,
+    BiocManager
 Config/reticulate:
   list(
     packages = list(
