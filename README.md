@@ -6,7 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of scLinear is to …
+The goal of scLinear is to predict antibody derived tags (ADT) data from
+gene expression data in scRNA-seq data.
 
 ## Installation
 
@@ -20,16 +21,16 @@ devtools::install_github("DanHanh/scLinear")
 
 ## Get example data
 
-This is a basic example which shows you how to solve a common problem:
-
 ``` r
+set.seed(42)
+
 library(scLinear)
 
-## get some example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
-# The download link: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3.
-# The File: "Feature / cell matrix (raw)"
+## Example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
+# Download link: "https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3".
+# File: "Feature / cell matrix (filtered)"
 
-pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix")
+pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix/pbmc_10k_protein_v3_filtered_feature_bc_matrix/filtered_feature_bc_matrix")
 rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
 pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
 pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
@@ -39,7 +40,10 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 ## Prepare data
 
 ``` r
-pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster = TRUE, remove_empty_droplets = TRUE)
+pbmc10k <- prepare_data(pbmc10k,
+        integrate_data = FALSE,
+        annotation_selfCluster = TRUE, 
+        remove_empty_droplets = FALSE)
 #> [1] "Start remove doublets"
 ```
 
@@ -50,15 +54,15 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
 <img src="man/figures/README-unnamed-chunk-3-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-3-3.png" width="100%" />
 
     #> [1] "Start clustering data"
-    #> [1] "Number of used dimensions for clustering: 30"
+    #> [1] "Number of used dimensions for clustering: 26"
     #> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
     #> 
-    #> Number of nodes: 6792
-    #> Number of edges: 302688
+    #> Number of nodes: 6703
+    #> Number of edges: 285702
     #> 
     #> Running Louvain algorithm...
-    #> Maximum modularity in 10 random starts: 0.8736
-    #> Number of communities: 15
+    #> Maximum modularity in 10 random starts: 0.8810
+    #> Number of communities: 14
     #> Elapsed time: 0 seconds
     #> [1] "Start cell type annotation"
     #> Pre-defined cell type database panglaodb will be used.
@@ -74,8 +78,7 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
 ## Train new model
 
 ``` r
-## create a training and test set
-set.seed(42)
+## Create a training and a test set
 indx <- sample(1:length(colnames(pbmc10k)), size = length(colnames(pbmc10k)), replace = FALSE)
 pbmc10k_train <- pbmc10k[,indx[1:5000]]
 pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
@@ -84,18 +87,23 @@ pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
 pipe <- create_adt_predictor()
 
 ## train predictor
-pipe <- fit_predictor(pipe = pipe, gexp_train = pbmc10k_train@assays[["RNA"]],
+pipe <- fit_predictor(pipe = pipe,
+ gexp_train = pbmc10k_train@assays[["RNA"]],
               adt_train = pbmc10k_train@assays[["ADT"]],
-              normalize = TRUE)
+              normalize_gex = TRUE,
+              normalize_adt = TRUE)
 
 ## evaluate predictor
 eval_res <- evaluate_predictor(pipe = pipe,
                   gexp_test = pbmc10k_test@assays[["RNA"]],
                   adt_test = pbmc10k_test@assays[["ADT"]],
-                  normalize = TRUE)
+                  normalize_gex = TRUE,
+                  normalize_adt = TRUE)
 
 ## add predicted adt assay
-pbmc10k_test@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe, gexp = pbmc10k_test@assays[["RNA"]], normalize = TRUE)
+pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+                        gexp = pbmc10k_test@assays[["RNA"]],
+                        normalize = TRUE)
 ```
 
 ## Use pretrained model
@@ -112,41 +120,18 @@ pipe$gex_preprocessor$do_log1p <- FALSE
 pipe <- load_pretrained_model(pipe, model = "all")
 pipe$gex_preprocessor$do_log1p <- FALSE
 
-eval_res <- evaluate_predictor(pipe, t_cells@assays$RNA, t_cells@assays$ADT, normalize = TRUE)
+eval_res <- evaluate_predictor(pipe,
+                t_cells@assays$RNA,
+                t_cells@assays$ADT,
+                normalize_gex = TRUE,
+                normalize_adt = TRUE)
 print(eval_res)
 #> [[1]]
-#> [1] 0.6037294
+#> [1] 0.7209162
 #> 
 #> [[2]]
-#> [1] 0.8506006
+#> [1] 0.855126
 #> 
 #> [[3]]
-#> [1] 0.7471668
+#> [1] 0.7489931
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.

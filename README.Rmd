@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 
 knitr::opts_chunk$set(message = FALSE)
 knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
 
 
 ```
@@ -23,7 +24,7 @@ knitr::opts_chunk$set(warning = FALSE)
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of scLinear is to ...
+The goal of scLinear is to predict antibody derived tags (ADT) data from gene expression data in scRNA-seq data.
 
 ## Installation
 
@@ -36,16 +37,16 @@ devtools::install_github("DanHanh/scLinear")
 
 ## Get example data
 
-This is a basic example which shows you how to solve a common problem:
-
 ```{r}
+set.seed(42)
+
 library(scLinear)
 
-## get some example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
-# The download link: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3.
-# The File: "Feature / cell matrix (raw)"
+## Example data from the Seurat PBMC10K example data set for the tutorial: https://satijalab.org/seurat/articles/multimodal_vignette.html.
+# Download link: "https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3".
+# File: "Feature / cell matrix (filtered)"
 
-pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix")
+pbmc10k.data <- Seurat::Read10X(data.dir = "./local/raw_feature_bc_matrix/pbmc_10k_protein_v3_filtered_feature_bc_matrix/filtered_feature_bc_matrix")
 rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
 pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
 pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
@@ -57,7 +58,10 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 ## Prepare data
 
 ```{r}
-pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster = TRUE, remove_empty_droplets = TRUE)
+pbmc10k <- prepare_data(pbmc10k,
+ 		integrate_data = FALSE,
+ 		annotation_selfCluster = TRUE, 
+ 		remove_empty_droplets = FALSE)
 
 
 ```
@@ -66,8 +70,7 @@ pbmc10k <- prepare_data(pbmc10k, integrate_data = FALSE, annotation_selfCluster 
 ## Train new model
 
 ```{r}
-## create a training and test set
-set.seed(42)
+## Create a training and a test set
 indx <- sample(1:length(colnames(pbmc10k)), size = length(colnames(pbmc10k)), replace = FALSE)
 pbmc10k_train <- pbmc10k[,indx[1:5000]]
 pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
@@ -76,18 +79,23 @@ pbmc10k_test <- pbmc10k[,indx[5001:length(colnames(pbmc10k))]]
 pipe <- create_adt_predictor()
 
 ## train predictor
-pipe <- fit_predictor(pipe = pipe, gexp_train = pbmc10k_train@assays[["RNA"]],
+pipe <- fit_predictor(pipe = pipe,
+ gexp_train = pbmc10k_train@assays[["RNA"]],
               adt_train = pbmc10k_train@assays[["ADT"]],
-              normalize = TRUE)
+              normalize_gex = TRUE,
+              normalize_adt = TRUE)
 
 ## evaluate predictor
 eval_res <- evaluate_predictor(pipe = pipe,
                   gexp_test = pbmc10k_test@assays[["RNA"]],
                   adt_test = pbmc10k_test@assays[["ADT"]],
-                  normalize = TRUE)
+                  normalize_gex = TRUE,
+                  normalize_adt = TRUE)
 
 ## add predicted adt assay
-pbmc10k_test@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe, gexp = pbmc10k_test@assays[["RNA"]], normalize = TRUE)
+pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+ 						gexp = pbmc10k_test@assays[["RNA"]],
+ 						normalize = TRUE)
 
 ```
 
@@ -107,31 +115,12 @@ pipe$gex_preprocessor$do_log1p <- FALSE
 pipe <- load_pretrained_model(pipe, model = "all")
 pipe$gex_preprocessor$do_log1p <- FALSE
 
-eval_res <- evaluate_predictor(pipe, t_cells@assays$RNA, t_cells@assays$ADT, normalize = TRUE)
+eval_res <- evaluate_predictor(pipe,
+ 				t_cells@assays$RNA,
+ 				t_cells@assays$ADT,
+ 				normalize_gex = TRUE,
+ 				normalize_adt = TRUE)
 print(eval_res)
 
 ```
 
-
-```{r}
-
-
-```
-
-
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.

@@ -4,7 +4,7 @@
 #'
 #' @param object A Seurat object
 #'
-#' @return object A Seurat object containing with annotated cell types
+#' @return object A pre-processed Seurat object  with annotated cell types
 #' @export
 #'
 #' @examples
@@ -12,7 +12,7 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE){
   set.seed(seed)
 
   plot_list <- list()
@@ -67,7 +67,14 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
   base::print(p1)
 
-  return(list(object = object, plots = plot_list))
+  if(return_plots){
+    return_object <- list(object = object, plots = plot_list)
+  }else{
+    return_object <- object
+  }
+
+
+  return(return_object)
 
 }
 
@@ -111,7 +118,7 @@ scLinear <- function(object = object, cell_type){
 #'
 #' @examples
 #' \dontrun{
-#' create_adt_predictor(do_log1p = FALSE)
+#' create_adt_predictor()
 #' }
 create_adt_predictor <- function(do_log1p = FALSE){
     pipe <- prediction$ADTPredictor(do_log1p = do_log1p)
@@ -277,7 +284,7 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 #' }
 load_pretrained_model <- function(pipe, model = "all"){
 
-  load_path <-  base::system.file("pretrained_models",package = "scLinear")
+  load_path <-  base::system.file("data",package = "scLinear")
 
   m <- switch(model,
            "all" = "ADTPredictor_neuripstrain_alltypes.joblib",

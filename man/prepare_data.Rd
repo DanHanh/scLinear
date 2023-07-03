@@ -16,7 +16,8 @@ prepare_data(
   FDR = 0.01,
   annotation_selfCluster = FALSE,
   resolution = 0.8,
-  seed = 42
+  seed = 42,
+  return_plots = FALSE
 )
 }
 \arguments{

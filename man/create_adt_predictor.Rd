@@ -17,6 +17,6 @@ Create a Gene expression to ADT assay predictor
 }
 \examples{
 \dontrun{
-create_adt_predictor(do_log1p = FALSE)
+create_adt_predictor()
 }
 }
