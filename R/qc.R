@@ -121,7 +121,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
       ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
-    base::print(p)
+    if(print_plots){base::print(p)}
 
   }else{
     metadata <- sce@colData@listData %>% as.data.frame() %>%
