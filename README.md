@@ -44,30 +44,27 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 
 pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> [1] "Start remove doublets"
+#> [1] "Start low quality cell removal"
+#> [1] "Start clustering data"
+#> [1] "Number of used dimensions for clustering: 26"
+#> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+#> 
+#> Number of nodes: 6703
+#> Number of edges: 285702
+#> 
+#> Running Louvain algorithm...
+#> Maximum modularity in 10 random starts: 0.8810
+#> Number of communities: 14
+#> Elapsed time: 0 seconds
+#> [1] "Start cell type annotation"
+#> Pre-defined cell type database panglaodb will be used.
+#> Multi Resolution Annotation Started. 
+#> Level 1 annotation started. 
+#> Level 2 annotation started. 
+#> Level 3 annotation started. 
+#> Level 4 annotation started. 
+#> Uniform Resolution Annotation Started.
 ```
-
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
-
-    #> [1] "Start low quality cell removal"
-    #> [1] "Start clustering data"
-    #> [1] "Number of used dimensions for clustering: 26"
-    #> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
-    #> 
-    #> Number of nodes: 6703
-    #> Number of edges: 285702
-    #> 
-    #> Running Louvain algorithm...
-    #> Maximum modularity in 10 random starts: 0.8810
-    #> Number of communities: 14
-    #> Elapsed time: 0 seconds
-    #> [1] "Start cell type annotation"
-    #> Pre-defined cell type database panglaodb will be used.
-    #> Multi Resolution Annotation Started. 
-    #> Level 1 annotation started. 
-    #> Level 2 annotation started. 
-    #> Level 3 annotation started. 
-    #> Level 4 annotation started. 
-    #> Uniform Resolution Annotation Started.
 
 ## Prepare data
 
@@ -133,8 +130,8 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   normalize_adt = TRUE)
 
 print(eval_res)
-#>        RMSE   Pearson  Spearman
-#> 1 0.3467291 0.9441001 0.8730148
+#>        RMSE   Pearson Spearman
+#> 1 0.3466322 0.9440206 0.872596
 
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
