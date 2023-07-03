@@ -16,6 +16,7 @@ Config/testthat/edition: 3
 Remotes: github::JiaLiVUMC/scMRMA
 Imports:
     devtools,
+    BiocManager,
     ggplot2,
     intrinsicDimension,
     magrittr,
@@ -29,8 +30,7 @@ Imports:
     SingleCellExperiment,
     DropletUtils,
     Matrix,
-    scMRMA,
-    BiocManager
+    scMRMA
 Config/reticulate:
   list(
     packages = list(
