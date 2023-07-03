@@ -14,6 +14,7 @@ Suggests:
 Config/testthat/edition: 3
 Remotes: github::JiaLiVUMC/scMRMA
 biocViews:
+    Seurat
 Imports:
     devtools,
     BiocManager,
@@ -23,7 +24,6 @@ Imports:
     reticulate,
     scater,
     scDblFinder,
-    Seurat,
     tidyselect,
     pals,
     scran,
