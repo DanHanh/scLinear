@@ -72,7 +72,6 @@ pbmc10k <- prepare_data(pbmc10k,
  		annotation_selfCluster = TRUE, 
  		remove_empty_droplets = FALSE)
 
-
 ```
 
 

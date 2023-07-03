@@ -130,8 +130,8 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   normalize_adt = TRUE)
 
 print(eval_res)
-#>        RMSE   Pearson Spearman
-#> 1 0.3466322 0.9440206 0.872596
+#>        RMSE   Pearson  Spearman
+#> 1 0.3473135 0.9436867 0.8726635
 
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
