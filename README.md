@@ -75,7 +75,7 @@ pbmc10k <- prepare_data(pbmc10k,
 
 <img src="man/figures/README-unnamed-chunk-3-4.png" width="100%" />
 
-## Train new model
+## Train a new model
 
 ``` r
 ## Create a training and a test set
@@ -100,38 +100,33 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   normalize_gex = TRUE,
                   normalize_adt = TRUE)
 
-## add predicted adt assay
+## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k_test@assays[["RNA"]],
                         normalize = TRUE)
 ```
 
-## Use pretrained model
+## Use a pre-trained model
 
 ``` r
 library(scLinear)
 
-## subset pbmc data to only T-cells
-t_cells <- pbmc10k %>% base::subset(subset = cell_type == "T")
-
-pipe <- create_adt_predictor()
-pipe$gex_preprocessor$do_log1p <- FALSE
 ## load pre-trained model (available models: all, bcell, tcell, nkcell)
+pipe <- create_adt_predictor()
 pipe <- load_pretrained_model(pipe, model = "all")
-pipe$gex_preprocessor$do_log1p <- FALSE
 
 eval_res <- evaluate_predictor(pipe,
-                t_cells@assays$RNA,
-                t_cells@assays$ADT,
+                pbmc10k@assays$RNA,
+                pbmc10k@assays$ADT,
                 normalize_gex = TRUE,
                 normalize_adt = TRUE)
 print(eval_res)
 #> [[1]]
-#> [1] 0.7209162
+#> [1] 0.8107419
 #> 
 #> [[2]]
-#> [1] 0.855126
+#> [1] 0.8534997
 #> 
 #> [[3]]
-#> [1] 0.7489931
+#> [1] 0.7175379
 ```

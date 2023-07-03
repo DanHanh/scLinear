@@ -24,7 +24,7 @@ prepare_data(
 \item{object}{A Seurat object}
 }
 \value{
-object A Seurat object containing with annotated cell types
+object A pre-processed Seurat object  with annotated cell types
 }
 \description{
 Prepare data for modality prediction

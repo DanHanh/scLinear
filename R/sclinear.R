@@ -248,7 +248,7 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 
   predicted_adt <- adt_predict(pipe, gexp_test, slot = slot,  normalize = normalize_gex)
 
-  ## subset to only common features
+  ## subset to features found in predicted and in test matrix
   p_adt <- subset(predicted_adt,features = which(rownames(predicted_adt) %in% rownames(adt_test)) )
   t_adt <- subset(adt_test,features = which(rownames(adt_test) %in% rownames(predicted_adt)) )
 
