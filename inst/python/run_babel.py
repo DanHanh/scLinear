@@ -10,7 +10,8 @@ adt_train = ad.read_h5ad(dataset_path + "train_mod2.h5ad")
 adt_test = ad.read_h5ad(dataset_path + "test_mod2.h5ad")
 
 # using high-level interface
-pipe = ADTPredictorBabel(do_log1p=False)
+# set use_vanilla_nn to True to use a Vanilla NN instead of BabelDance
+pipe = ADTPredictorBabel(do_log1p=False, use_vanilla_nn=False)
 # fit on training data
 # gex_test is optional and is used for transductive preprocessing if provided
 # gex_names and adt_names are optional and should refer to the variable names of gex_train and adt_train

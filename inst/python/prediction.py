@@ -3,10 +3,16 @@ from typing import Optional, Tuple, Dict, Union
 
 import anndata as ad
 import numpy as np
+import torch
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LinearRegression
 import warnings
 
+from torch.utils.data import TensorDataset, DataLoader
+
+from babel_models import VanillaNN, IdentityTransformer, BabelDance
 from preprocessing import GEXPreprocessor
 
 class ADTPredictor:
@@ -301,19 +307,11 @@ class KernelRidgeEnsemble:
         self.regressors = pretrained_regressors.regressors
 
 
-class IdentityTransformer:
-    def fit_transform(self, X):
-        return X
-
-    def transform(self, X):
-        return X
-
-
 class ADTPredictorBabel(ADTPredictor):
-
     """
-    ADT predictor class that uses a Babel model instead of a linear regression model.
-    Babel code adapted from: https://github.com/OmicsML/dance/blob/5edba7de34c85326bf7874cd262989f7baa2db03/examples/multi_modality/predict_modality/babel.py
+    ADT predictor class that uses a Babel model instead of a linear regression model. Babel code adapted from:
+    https://github.com/OmicsML/dance/blob/5edba7de34c85326bf7874cd262989f7baa2db03/examples/multi_modality
+    /predict_modality/babel.py
     """
 
     def __init__(
@@ -321,6 +319,7 @@ class ADTPredictorBabel(ADTPredictor):
             do_log1p: Optional[bool] = False,
             n_components: Optional[int] = -1,
             do_tsvd_before_zscore: Optional[bool] = True,
+            use_vanilla_nn: Optional[bool] = False,
     ):
         """
         Parameters
@@ -335,51 +334,12 @@ class ADTPredictorBabel(ADTPredictor):
             Default 'True' works better for downstream training and prediction on data from a single dataset.
             Set to 'False' to extract more robust features that work well across datasets.
         """
-        import argparse
-        import torch
-        import os
-        import logging
         super().__init__(do_log1p, n_components, do_tsvd_before_zscore)
         if n_components == -1:
             # Babel does not perform dimensionality reduction by default
-            # self.gex_preprocessor.tsvd = IdentityTransformer()
             # If using negative binomial loss for GEX, z-score should not be performed
             self.gex_preprocessor = IdentityTransformer()
-
-        # Babel arguments
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-t", "--subtask", default="openproblems_bmmc_cite_phase2_rna")
-        parser.add_argument("-device", "--device", default="cuda")
-        parser.add_argument("-cpu", "--cpus", default=1, type=int)
-        parser.add_argument("-seed", "--rnd_seed", default=0, type=int)
-        parser.add_argument("-m", "--model_folder", default="./models")
-        parser.add_argument("--outdir", "-o", default="./logs", help="Directory to output to")
-        parser.add_argument("--lossweight", type=float, default=1., help="Relative loss weight")
-        # parser.add_argument("--lr", "-l", type=float, default=0.01, help="Learning rate")
-        parser.add_argument("--lr", "-l", type=float, default=0.0001, help="Learning rate")
-        parser.add_argument("--batchsize", "-b", type=int, default=64, help="Batch size")
-        parser.add_argument("--hidden", type=int, default=64, help="Hidden dimensions")
-        parser.add_argument("--earlystop", type=int, default=20, help="Early stopping after N epochs")
-        parser.add_argument("--naive", "-n", action="store_true", help="Use a naive model instead of lego model")
-        parser.add_argument("--resume", action="store_true")
-        # parser.add_argument("--max_epochs", type=int, default=500)
-        parser.add_argument("--max_epochs", type=int, default=20)
-        args = parser.parse_args([])
-        args.resume = True
-        torch.set_num_threads(args.cpus)
-        args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.babel_args = args
-        os.makedirs(args.model_folder, exist_ok=True)
-        os.makedirs(args.outdir, exist_ok=True)
-
-        args.outdir = os.path.abspath(args.outdir)
-
-        if not os.path.isdir(os.path.dirname(args.outdir)):
-            os.makedirs(os.path.dirname(args.outdir))
-
-        # Specify output log file
-        fh = logging.FileHandler(f"{args.outdir}/training_{args.subtask}_{args.rnd_seed}.log", "w")
-        fh.setLevel(logging.INFO)
+        self.use_vanilla_nn = use_vanilla_nn
 
     def fit(
             self,
@@ -422,21 +382,52 @@ class ADTPredictorBabel(ADTPredictor):
                 warnings.filterwarnings("ignore", category=UserWarning)
                 gex_train_test = ad.concat((gex_train, gex_test), join='outer')
             self.gex_preprocessor.fit_transform(gex_train_test)
-            # X_train = gex_train_test.obsm['X_pca'][:gex_train.shape[0]]
             X_train = gex_train_test.X[:gex_train.shape[0]]
         else:
             self.gex_preprocessor.fit_transform(gex_train)
-            # X_train = gex_train.obsm['X_pca']
             X_train = gex_train.X
 
         # Create the Babel model, requires the input and output dimensions
-        # from dance.utils import
-        # from dance.utils import loss as loss_functions
-        from dance.modules.multi_modality.predict_modality import BabelWrapper
-        import torch
-        self.model = BabelWrapper(self.babel_args, dim_in=X_train.shape[1], dim_out=adt_train.shape[1])
+        if self.use_vanilla_nn:
+            self.model = VanillaNN(gex_dim=X_train.shape[1], adt_dim=adt_train.shape[1])
+        else:
+            self.model = BabelDance(gex_dim=X_train.shape[1], adt_dim=adt_train.shape[1])
+        checkpoint_callback = ModelCheckpoint(monitor="val_gex2adt", save_top_k=1, mode="min")
+        trainer = pl.Trainer(
+            max_epochs=40,
+            enable_checkpointing=True,
+            callbacks=[
+                EarlyStopping(monitor="val_gex2adt", patience=10, min_delta=0.001),
+                checkpoint_callback,
+            ],
+        )
+        dataset = TensorDataset(torch.Tensor(X_train), torch.Tensor(adt_train))
+        train_dataset, val_dataset = torch.utils.data.random_split(dataset, [0.85, 0.15])
         # Fit the model
-        self.model.fit(torch.from_numpy(X_train), torch.from_numpy(adt_train), max_epochs=self.babel_args.max_epochs)
+        trainer.fit(
+            self.model,
+            DataLoader(
+                train_dataset,
+                batch_size=512,
+                num_workers=4,
+                shuffle=True,
+            ),
+            DataLoader(
+                val_dataset,
+                batch_size=512,
+                num_workers=4,
+            ),
+        )
+        # Load the best model
+        print("loading best checkpoint from:", checkpoint_callback.best_model_path)
+        if self.use_vanilla_nn:
+            self.model = VanillaNN.load_from_checkpoint(checkpoint_callback.best_model_path, gex_dim=X_train.shape[1],
+                                                        adt_dim=adt_train.shape[1]).to("cpu")
+        else:
+            self.model = BabelDance.load_from_checkpoint(checkpoint_callback.best_model_path, gex_dim=X_train.shape[1],
+                                                        adt_dim=adt_train.shape[1]).to("cpu")
+        self.model = self.model.to("cpu")
+
 
     def predict(
             self,
@@ -489,8 +480,7 @@ class ADTPredictorBabel(ADTPredictor):
         X_test = gex_test.X
 
         # Predict ADT data
-        import torch
-        adt_pred = self.model.predict(torch.from_numpy(X_test)).cpu().numpy()
+        adt_pred = self.model.predict(torch.from_numpy(X_test)).detach().cpu().numpy()
         # Clip negative values
         adt_pred = np.clip(adt_pred, a_min=0, a_max=None)
 
