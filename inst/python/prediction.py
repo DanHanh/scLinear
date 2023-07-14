@@ -96,6 +96,31 @@ class ADTPredictor:
         # Fit the model
         self.model.fit(X_train, adt_train)
 
+    def _filter_gex_names(
+            self,
+            gex_test: np.ndarray,
+            gex_names: np.ndarray,
+    ) -> np.ndarray:
+        if self.gex_names is None:
+            raise ValueError(
+                'GEX names were not provided during training. '
+                'Please provide GEX names during training or prediction '
+                'if you want to match gene names by providing gex_names as an argument.'
+            )
+        if not np.array_equal(gex_names, self.gex_names):
+            # Discard the genes that are not in the training data
+            # Set the genes that are in the test data but not in the training data to 0
+            # And sort the columns to match the training data
+            selfgex2idx = dict()
+            for i, g in enumerate(self.gex_names):
+                selfgex2idx[g] = i
+            gex_test_new = np.zeros((gex_test.shape[0], len(self.gex_names)))
+            for i, g in enumerate(gex_names):
+                if g in selfgex2idx:
+                    gex_test_new[:, selfgex2idx[g]] = gex_test[:, i]
+            gex_test = gex_test_new
+        return gex_test
+
     def predict(
             self,
             gex_test: np.ndarray,
@@ -122,24 +147,7 @@ class ADTPredictor:
         """
         # If GEX names are provided, check if they match the training names
         if gex_names is not None:
-            if self.gex_names is None:
-                raise ValueError(
-                    'GEX names were not provided during training. '
-                    'Please provide GEX names during training or prediction '
-                    'if you want to match gene names by providing gex_names as an argument.'
-                )
-            if not np.array_equal(gex_names, self.gex_names):
-                # Discard the genes that are not in the training data
-                # Set the genes that are in the test data but not in the training data to 0
-                # And sort the columns to match the training data
-                selfgex2idx = dict()
-                for i, g in enumerate(self.gex_names):
-                    selfgex2idx[g] = i
-                gex_test_new = np.zeros((gex_test.shape[0], len(self.gex_names)))
-                for i, g in enumerate(gex_names):
-                    if g in selfgex2idx:
-                        gex_test_new[:, selfgex2idx[g]] = gex_test[:, i]
-                gex_test = gex_test_new
+            gex_test = self._filter_gex_names(gex_test, gex_names)
         # Preprocess GEX data
         gex_test = ad.AnnData(gex_test, dtype=gex_test.dtype)
         self.gex_preprocessor.transform(gex_test)
@@ -151,6 +159,53 @@ class ADTPredictor:
         adt_pred = np.clip(adt_pred, a_min=0, a_max=None)
 
         return adt_pred, self.adt_names
+
+    def feature_importance(self, gex_test: np.ndarray, gex_names: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Get the feature importance of the GEX genes for predicting the ADT proteins.
+        Parameters
+        ----------
+        gex_test
+            Test GEX matrix.
+        gex_names
+            Optional GEX gene names of the columns of `gex_test`.
+            If provided, the function will check if `gex_names` matches `self.gex_names` used for training,
+            and will use only the columns that match.
+            The names in `gex_names` that do are not in `self.gex_names` will be ignored,
+            and the columns of `gex_test` that do not have a matching name in `gex_names` will be set to 0.
+        Returns
+        -------
+        feature_importance
+            Feature importance matrix of dimensions #ADT * #GEX,
+            it's the Jacobian matrix of the ADT prediction with respect to the GEX input,
+            averaged over all the cells in gex_test.
+        """
+        if not self.gex_preprocessor.do_tsvd_before_zscore:
+            raise NotImplementedError('Feature importance calculation is not implemented for this case')
+
+        # If GEX names are provided, check if they match the training names and filter them
+        if gex_names is not None:
+            gex_test = self._filter_gex_names(gex_test, gex_names)
+
+        # Preprocess GEX data
+        gex_test = ad.AnnData(gex_test, dtype=gex_test.dtype)
+        self.gex_preprocessor.transform(gex_test)
+        X_test = gex_test.obsm['X_pca']
+
+        # Calculate the Jacobian of the z-scored low-dim GEX w.r.t. the low-dim GEX using PyTorch >=2.0
+        from torch.func import vmap, jacrev
+        def zscore_torch(X):
+            return (X - X.mean()) / torch.sqrt(torch.var(X, correction=0))
+        X_torch = torch.tensor(X_test)
+        J = vmap(jacrev(zscore_torch))(X_torch)
+
+        # Calculate the feature importance as W(adt*comps) * J(comps*comps) * V(comps*gex)
+        WJ = torch.tensor(self.model.coef_) @ J
+        feature_importance = WJ @ torch.tensor(self.gex_preprocessor.tsvd.components_)
+
+        # Average the feature importance over all the cells
+        return feature_importance.mean(axis=0).numpy()
+
 
     def save(self, path: str, compress: Optional[bool] = True):
         """
@@ -211,6 +266,9 @@ class ADTPredictorKRREnsemble(ADTPredictor):
         """
         super().__init__(do_log1p, n_components, do_tsvd_before_zscore)
         self.model = KernelRidgeEnsemble(batch2idxs)
+
+    def feature_importance(self, gex_test, gex_names):
+        raise NotImplementedError('Feature importance calculation is not implemented for this case')
 
 
 class KernelRidgeEnsemble:
@@ -485,3 +543,6 @@ class ADTPredictorBabel(ADTPredictor):
         adt_pred = np.clip(adt_pred, a_min=0, a_max=None)
 
         return adt_pred, self.adt_names
+
+    def feature_importance(self, gex_test, gex_names):
+        raise NotImplementedError('Feature importance calculation is not implemented for this case')
