@@ -38,5 +38,6 @@ Config/reticulate:
       list(package = "sklearn", pip=TRUE),
       list(package = "anndata", pip=TRUE),
       list(package = "joblib", pip=TRUE)
+      list(package = "torch", pip=TRUE)
     )
   )
