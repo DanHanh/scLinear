@@ -37,7 +37,7 @@ Config/reticulate:
       list(package = "numpy", pip=TRUE, version >= 1.6),
       list(package = "sklearn", pip=TRUE),
       list(package = "anndata", pip=TRUE),
-      list(package = "joblib", pip=TRUE)
+      list(package = "joblib", pip=TRUE),
       list(package = "torch", pip=TRUE)
     )
   )
