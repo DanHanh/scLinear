@@ -29,12 +29,13 @@ Imports:
     SingleCellExperiment,
     DropletUtils,
     Matrix,
-    scMRMA
+    scMRMA,
+    BiocManager
 Config/reticulate:
   list(
     packages = list(
       list(package = "scanpy", pip=TRUE),
-      list(package = "numpy", pip=TRUE, version >= 1.6),
+      list(package = "numpy", pip=TRUE, version = 2.4),
       list(package = "sklearn", pip=FALSE),
       list(package = "anndata", pip=TRUE),
       list(package = "joblib", pip=TRUE),
