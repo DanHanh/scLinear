@@ -36,7 +36,7 @@ Config/reticulate:
     packages = list(
       list(package = "scanpy", pip=TRUE),
       list(package = "numpy", pip=TRUE, version >= 1.6, version <=2.4 ),
-      list(package = "sklearn", pip=FALSE),
+      list(package = "scikit-learn", pip=FALSE),
       list(package = "anndata", pip=TRUE),
       list(package = "joblib", pip=TRUE),
       list(package = "torch", pip=TRUE),
