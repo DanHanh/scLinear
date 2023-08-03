@@ -39,7 +39,7 @@ Config/reticulate:
       list(package = "sklearn", pip=FALSE),
       list(package = "anndata", pip=TRUE),
       list(package = "joblib", pip=TRUE),
-      list(package = "torch", pip=TRUE)
+      list(package = "torch", pip=TRUE),
       list(package = "pytorch_ligthning", pip=TRUE)
     )
   )
