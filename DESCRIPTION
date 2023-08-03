@@ -30,7 +30,8 @@ Imports:
     DropletUtils,
     Matrix,
     scMRMA,
-    BiocManager
+    BiocManager,
+    leiden
 Config/reticulate:
   list(
     packages = list(
