@@ -6,7 +6,7 @@ evaluate <- NULL
 prediction <- NULL
 preprocessing <- NULL
 torch <- NULL
-
+pytorch_ligthning <- NULL
 
 .onLoad <- function(libname, pkgname){
     reticulate::configure_environment(pkgname)
@@ -18,4 +18,6 @@ torch <- NULL
     prediction <<- reticulate::import_from_path(module = "prediction", path = module_path, delay_load = TRUE)
     evaluate <<- reticulate::import_from_path(module = "evaluate", path = module_path, delay_load = TRUE)
     torch <<- reticulate::import_from_path(module = "torch", path = module_path, delay_load = TRUE)
-}
+    pytorch_ligthning <<- reticulate::import_from_path(module = "pytorch_ligthning", path = module_path, delay_load = TRUE)
+
+    }
