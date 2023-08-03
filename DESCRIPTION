@@ -40,5 +40,6 @@ Config/reticulate:
       list(package = "anndata", pip=TRUE),
       list(package = "joblib", pip=TRUE),
       list(package = "torch", pip=TRUE)
+      list(package = "pytorch_ligthning", pip=TRUE)
     )
   )
