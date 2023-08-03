@@ -34,12 +34,12 @@ Imports:
 Config/reticulate:
   list(
     packages = list(
-      list(package = "scanpy", pip=TRUE),
-      list(package = "numpy", pip=TRUE, version >= 1.6, version <=2.4 ),
+      list(package = "scanpy", pip=FALSE),
+      list(package = "numpy", pip=FALSE, version >= 1.6, version <=2.4 ),
       list(package = "scikit-learn", pip=FALSE),
-      list(package = "anndata", pip=TRUE),
-      list(package = "joblib", pip=TRUE),
-      list(package = "torch", pip=TRUE),
-      list(package = "pytorch-lightning", pip=TRUE)
+      list(package = "anndata", pip=FALSE),
+      list(package = "joblib", pip=FALSE),
+      list(package = "torch", pip=FALSE),
+      list(package = "pytorch-lightning", pip=FALSE)
     )
   )
