@@ -18,6 +18,6 @@ pytorch_ligthning <- NULL
     prediction <<- reticulate::import_from_path(module = "prediction", path = module_path, delay_load = TRUE)
     evaluate <<- reticulate::import_from_path(module = "evaluate", path = module_path, delay_load = TRUE)
     torch <<- reticulate::import_from_path(module = "torch", path = module_path, delay_load = TRUE)
-    pytorch_ligthning <<- reticulate::import_from_path(module = "pytorch-ligthning", path = module_path, delay_load = TRUE)
+    pytorch_ligthning <<- reticulate::import_from_path(module = "pytorch-lightning", path = module_path, delay_load = TRUE)
 
     }
