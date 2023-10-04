@@ -41,6 +41,6 @@ Config/reticulate:
       list(package = "anndata", pip=FALSE),
       list(package = "joblib", pip=FALSE),
       list(package = "torch", pip=FALSE),
-      list(package = "pytorch-lightning", pip=FALSE)
+      list(package = "pytorch_lightning", pip=FALSE)
     )
   )
