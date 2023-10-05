@@ -309,6 +309,12 @@ load_pretrained_model <- function(pipe, model = "all"){
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Normalize expression matirx
+#' normalized_matrix <- gexp_normalize(sobj\@assays[["RNA"]]\@counts)
+#' # Add normalized matrix back to RNA assay in Seurat.
+#' sobj\@assays[["RNA"]]\@data <- normalized_matrix
+#' }
 gexp_normalize <- function(gexp_matrix, center.size.factors = FALSE, log = FALSE, ...){
   ## normalize data GEX
   sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
