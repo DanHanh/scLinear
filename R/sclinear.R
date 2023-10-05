@@ -303,18 +303,12 @@ load_pretrained_model <- function(pipe, model = "all"){
 #' @param gexp_matrix A gene expression matrix
 #' @param center.size.factors
 #' @param log
-#' @param ... For the methid, additional arguments passed to logNormCounts.
+#' @param ... For the method, additional arguments passed to logNormCounts.
 #'
 #' @return Normalized expression matrix
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Normalize expression matirx
-#' normalized_matrix <- gexp_normalize(sobj\@assays[["RNA"]]\@counts)
-#' # Add normalized matrix back to RNA assay in Seurat.
-#' sobj\@assays[["RNA"]]\@data <- normalized_matrix
-#' }
 gexp_normalize <- function(gexp_matrix, center.size.factors = FALSE, log = FALSE, ...){
   ## normalize data GEX
   sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
