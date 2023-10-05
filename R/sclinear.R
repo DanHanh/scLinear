@@ -155,16 +155,11 @@ fit_predictor <- function(pipe, gexp_train , adt_train, slot_gex = "counts", slo
   gexp_matrix <- Seurat::GetAssayData(gexp_train, slot = slot_gex)
   adt_matrix <- Seurat::GetAssayData(adt_train, slot = slot_adt)
 
-  if(normalize_gex){
-    ## normalize data GEX
-    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
-    clusters <- scran::quickCluster(sce)
-    sce <- scran::computeSumFactors(sce, clusters=clusters)
-    sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
-    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
-    gexp_matrix <- base::log1p(gexp_matrix)
-  }
 
+
+  if(normalize_gex){
+    gexp_matrix <- gexp_normalize(gexp_matrix)
+  }
   if(normalize_adt){
     adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
   }
@@ -196,16 +191,8 @@ adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
   gexp_matrix <- Seurat::GetAssayData(gexp, slot = slot)
 
   if(normalize){
-    ## normalize data GEX
-    sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
-    clusters <- scran::quickCluster(sce)
-    sce <- scran::computeSumFactors(sce, clusters=clusters)
-    sce <- scuttle::logNormCounts(sce, pseudo.count = 1, center.size.factors = FALSE, log = FALSE)
-    gexp_matrix <- sce@assays@data@listData[["normcounts"]]
-    gexp_matrix <- base::log1p(gexp_matrix)
+    gexp_matrix <- gexp_normalize(gexp_matrix)
   }
-
-
   gexp_matrix <- Matrix::t(gexp_matrix)
 
   gexp_matrix_py <- reticulate::r_to_py(as.matrix(gexp_matrix))
@@ -308,3 +295,36 @@ load_pretrained_model <- function(pipe, model = "all"){
   return(pipe)
 
 }
+
+
+
+#' Normalize gene expression matrix with scran and scuttle
+#'
+#' @param gexp_matrix A gene expression matrix
+#' @param center.size.factors
+#' @param log
+#' @param ... For the methid, additional arguments passed to logNormCounts.
+#'
+#' @return Normalized expression matrix
+#' @export
+#'
+#' @examples
+#'
+#' # Normalize expression matirx
+#' normalized_matrix <- gexp_normalize(sobj@assays[["RNA"]]@counts)
+#' # Add normalized matrix back to RNA assay in Seurat.
+#' sobj@assays[["RNA"]]@data <- normalized_matrix
+#'
+#'
+#'
+gexp_normalize <- function(gexp_matrix, center.size.factors = FALSE, log = FALSE, ...){
+  ## normalize data GEX
+  sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
+  clusters <- scran::quickCluster(sce)
+  sce <- scran::computeSumFactors(sce, clusters=clusters)
+  sce <- scuttle::logNormCounts(sce, center.size.factors = center.size.factors, log = log, ...)
+  gexp_matrix <- sce@assays@data@listData[["normcounts"]]
+  gexp_matrix <- base::log1p(gexp_matrix)
+  return(gexp_matrix)
+}
+
