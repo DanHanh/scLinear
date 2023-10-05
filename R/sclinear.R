@@ -296,30 +296,3 @@ load_pretrained_model <- function(pipe, model = "all"){
 
 }
 
-
-
-#' Normalize gene expression matrix with scran and scuttle
-#'
-#' @param gexp_matrix A gene expression matrix
-#' @param center.size.factors
-#' @param log
-#' @param ... For the method, additional arguments passed to logNormCounts.
-#'
-#' @return Normalized expression matrix
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Normalize expression matirx
-#' }
-gexp_normalize <- function(gexp_matrix, center.size.factors = FALSE, log = FALSE, ...){
-  ## normalize data GEX
-  sce <- SingleCellExperiment::SingleCellExperiment(list(counts = gexp_matrix))
-  clusters <- scran::quickCluster(sce)
-  sce <- scran::computeSumFactors(sce, clusters=clusters)
-  sce <- scuttle::logNormCounts(sce, center.size.factors = center.size.factors, log = log, ...)
-  gexp_matrix <- sce@assays@data@listData[["normcounts"]]
-  gexp_matrix <- base::log1p(gexp_matrix)
-  return(gexp_matrix)
-}
-
