@@ -301,8 +301,8 @@ load_pretrained_model <- function(pipe, model = "all"){
 #' Normalize gene expression matrix with scran and scuttle
 #'
 #' @param gexp_matrix A gene expression matrix
-#' @param center.size.factors
-#' @param log
+#' @param center.size.factors A
+#' @param log A
 #' @param ... For the method, additional arguments passed to logNormCounts.
 #'
 #' @return Normalized expression matrix
