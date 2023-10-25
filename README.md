@@ -8,7 +8,7 @@
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
 gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.  
-<p align="center"><img src="man/figures/schematic.v5.2.png" width="75%" height="75%" align="middle"/><\p>  
+<p align="center"><img src="man/figures/schematic.v5.2.png" width="75%" height="75%" align="middle"/><p>  
   
 - [Installation](#Installation)
 - [Example](#Example)
@@ -103,11 +103,11 @@ pbmc10k <- prepare_data(pbmc10k,
 #> [1] "Start remove doublets"
 ```
 
-<p align="center"><img src="man/figures/README-unnamed-chunk-4-1.png" width="75%" height="75%"/><\p>
+<p align="center"><img src="man/figures/README-unnamed-chunk-4-1.png" width="75%" height="75%"/><p>
 
     #> [1] "Start low quality cell removal"
 
-<p align="center"><img src="man/figures/README-unnamed-chunk-4-2.png" width="75%" height="75%"/><img src="man/figures/README-unnamed-chunk-4-3.png" width="75%" height="75%"/><\p>
+<p align="center"><img src="man/figures/README-unnamed-chunk-4-2.png" width="75%" height="75%"/><img src="man/figures/README-unnamed-chunk-4-3.png" width="75%" height="75%"/><p>
 
     #> [1] "Start clustering data"
     #> [1] "Number of used dimensions for clustering: 26"
@@ -129,7 +129,7 @@ pbmc10k <- prepare_data(pbmc10k,
     #> Level 4 annotation started. 
     #> Uniform Resolution Annotation Started.
 
-<img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/>
+<p align="center"><img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/><p>
 
 ### Use a pre-trained model
 User may manually load pre-trained models (available models: all, bcell, tcell, nkcell). If a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.  
