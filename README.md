@@ -7,7 +7,7 @@
 <!-- badges: end -->
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
-gene expression data in scRNA-seq data.
+gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.
 
 ## Installation
 
