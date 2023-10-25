@@ -8,9 +8,10 @@
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
 gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.
-<img src="man/figures/schematic.v5.2.png" width="100%" />
+<img src="man/figures/schematic.v5.2.png" width="75%" height="75%" />
 - [Installation](#Installation)
 - [Example](#Example)
+- [Other Functions](#Other)
 - [Citation](#Citation)
 ## Installation
 
@@ -88,9 +89,9 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> Level 4 annotation started. 
 #> Uniform Resolution Annotation Started.
 ```
-## Other functions
+## Other
 scLinear calls different sub-workflows which can also be called independentaly.   
-`prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as  [above](#Running scLinear) 
+`prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as [above](#Running-scLinear") 
 ## Prepare data
 
 ``` r
@@ -101,11 +102,11 @@ pbmc10k <- prepare_data(pbmc10k,
 #> [1] "Start remove doublets"
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="75%" height="75%"/>
 
     #> [1] "Start low quality cell removal"
 
-<img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-4-3.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-2.png" width="75%" height="75%"/><img src="man/figures/README-unnamed-chunk-4-3.png" width="75%" height="75%"/>
 
     #> [1] "Start clustering data"
     #> [1] "Number of used dimensions for clustering: 26"
@@ -127,7 +128,7 @@ pbmc10k <- prepare_data(pbmc10k,
     #> Level 4 annotation started. 
     #> Uniform Resolution Annotation Started.
 
-<img src="man/figures/README-unnamed-chunk-4-4.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/>
 
 ## Train a new model
 
