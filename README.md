@@ -91,7 +91,7 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> Uniform Resolution Annotation Started.
 ```
 ## Other functions
-scLinear calls different sub-workflows which can also be called independentaly.
+scLinear calls different sub-workflows which can also be called independently.
 ### Prepare data
 `prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as [above](##Running-scLinear") 
 
