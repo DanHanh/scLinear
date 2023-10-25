@@ -14,6 +14,7 @@ gene expression data in scRNA-seq data. it includes all the necessary pre-proces
 - [Example](#Example)
 - [Other Functions](#Other-functions)
 - [Citation](#Citation)
+- [Contact us](#Contact-us)
 ## Installation
 
 You can install the development version of scLinear using devtools.  
@@ -59,7 +60,7 @@ You may run scLinear directly providing the Seurat object as input. List of opti
 `resolution` = 0.8 (default).  
 `seed` = 42 (default).  
 `return_plots` TRUE or FALSE (default).  
-`model` Available models "all" (default), "bcell", "tcell" and "nkcell".
+`model` Available models "all" (default), "bcell", "tcell" and "nkcell".  
 `assay_name` = "RNA" (default).  
 `print_plots` TRUE or FALSE (default).  
 
@@ -131,8 +132,7 @@ pbmc10k <- prepare_data(pbmc10k,
 <img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/>
 
 ### Use a pre-trained model
-Load pre-trained model (available models: all, bcell, tcell, nkcell).  
-if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.  
+User may manually load pre-trained models (available models: all, bcell, tcell, nkcell). If a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.  
 
 ``` r
 pipe <- create_adt_predictor()
@@ -147,15 +147,14 @@ pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 
 To train a new model the following commands need to be used. 
 `create_adt_predictor()` initialize predictor.
-`fit_predictor()` with parameters
+`fit_predictor()` with parameters:
 * `pipe` predictor initialized above.  
 * `gexp_train` gene expression matrix of training set (i.e. RNA assay from Seurat object).  
 * `adt_train` ADT matrix of training set.   
 * `normalize_gex` Gene expression normalization. TRUE (default) or FALSE.
 * `normalize_adt` ADT normalization. TRUE (default) or FALSE.
   
-Subsequently, the `evaluate_predictor` command can be used (same parameters with `fit_predictor`) to return the RMSE, Pearson and Spearman of the training process.  
-An example of this process can be found below.  
+Subsequently, the `evaluate_predictor` command can be used (same parameters with `fit_predictor`) to return the RMSE, Pearson and Spearman of the training process. An example of this process can be found below.  
 
 ``` r
 ## Create a training and a test set
@@ -191,3 +190,8 @@ pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 ```
 ## Citation
 Daniel Hanhart et al., "scLinear; against the deep current to predict protein abundance at single-cell resolution"
+
+## Contact us
+For any request or question you may contact:
+* Daniel Hanhart daniel.hanhart@unibe.ch
+* Panagiotis Chouvardas panagiotis.chouvardas@unibe.ch
