@@ -7,11 +7,11 @@
 <!-- badges: end -->
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
-gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.
+gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.  
 <img src="man/figures/schematic.v5.2.png" width="75%" height="75%" />
 - [Installation](#Installation)
 - [Example](#Example)
-- [Other Functions](#Other)
+- [Other Functions](#Other-functions)
 - [Citation](#Citation)
 ## Installation
 
@@ -89,10 +89,10 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> Level 4 annotation started. 
 #> Uniform Resolution Annotation Started.
 ```
-## Other
-scLinear calls different sub-workflows which can also be called independentaly.   
+## Other functions
+scLinear calls different sub-workflows which can also be called independentaly.
+### Prepare data
 `prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as [above](#Running-scLinear") 
-## Prepare data
 
 ``` r
 pbmc10k <- prepare_data(pbmc10k,
@@ -130,7 +130,29 @@ pbmc10k <- prepare_data(pbmc10k,
 
 <img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/>
 
-## Train a new model
+### Use a pre-trained model
+
+``` r
+## Load pre-trained model (available models: all, bcell, tcell, nkcell)
+# if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.
+pipe <- create_adt_predictor()
+pipe <- load_pretrained_model(pipe, model = "all")
+
+eval_res <- evaluate_predictor(pipe,
+                pbmc10k@assays$RNA,
+                pbmc10k@assays$ADT,
+                normalize_gex = TRUE,
+                normalize_adt = TRUE)
+print(eval_res)
+#>        RMSE   Pearson  Spearman
+#> 1 0.8107419 0.8534997 0.7175379
+
+pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+                        gexp = pbmc10k@assays[["RNA"]],
+                        normalize = TRUE)
+```
+
+### Train a new model
 
 ``` r
 ## Create a training and a test set
@@ -162,28 +184,6 @@ print(eval_res)
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k_test@assays[["RNA"]],
-                        normalize = TRUE)
-```
-
-## Use a pre-trained model
-
-``` r
-## Load pre-trained model (available models: all, bcell, tcell, nkcell)
-# if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.
-pipe <- create_adt_predictor()
-pipe <- load_pretrained_model(pipe, model = "all")
-
-eval_res <- evaluate_predictor(pipe,
-                pbmc10k@assays$RNA,
-                pbmc10k@assays$ADT,
-                normalize_gex = TRUE,
-                normalize_adt = TRUE)
-print(eval_res)
-#>        RMSE   Pearson  Spearman
-#> 1 0.8107419 0.8534997 0.7175379
-
-pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
-                        gexp = pbmc10k@assays[["RNA"]],
                         normalize = TRUE)
 ```
 ## Citation
