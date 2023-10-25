@@ -7,7 +7,7 @@
 <!-- badges: end -->
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
-gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.  
+gene expression data in scRNA-seq data. It includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.  
 <p align="center"><img src="man/figures/schematic.v5.2.png" width="75%" height="75%" align="middle"/><p>  
   
 - [Installation](#Installation)
@@ -132,7 +132,12 @@ pbmc10k <- prepare_data(pbmc10k,
 <p align="center"><img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/><p>
 
 ### Use a pre-trained model
-User may manually load pre-trained models (available models: all, bcell, tcell, nkcell). If a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.  
+User may manually load pre-trained models (available models: all, bcell, tcell, nkcell). If a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data. `adt_predict()` is then used to predict the ADT values with parameters:  
+* `pipe` Pretrained model.
+* `gexp` Gene expression matrix.
+* `slot` Seurat slot to use. "counts" (default)
+* `normalize` TRUE (default) or FALSE.
+  An example can be found below:
 
 ``` r
 pipe <- create_adt_predictor()
@@ -143,10 +148,10 @@ pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         normalize = TRUE)
 ```
 
-### Train a new model
+## Train a new model
 
 To train a new model the following commands need to be used. 
-`create_adt_predictor()` initialize predictor.
+`create_adt_predictor()` to initialize predictor.  
 `fit_predictor()` with parameters:
 * `pipe` predictor initialized above.  
 * `gexp_train` gene expression matrix of training set (i.e. RNA assay from Seurat object).  
