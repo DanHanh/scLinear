@@ -150,7 +150,7 @@ pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 
 ## Train a new model
 
-To train a new model the following commands need to be used. 
+To train a new model the following commands need to be used.   
 `create_adt_predictor()` to initialize predictor.  
 `fit_predictor()` with parameters:
 * `pipe` predictor initialized above.  
