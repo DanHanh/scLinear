@@ -8,7 +8,7 @@
 
 The goal of scLinear is to predict antibody derived tags (ADT) data from
 gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.  
-<p align="center"><img src="man/figures/schematic.v5.2.png" width="75%" height="75%" align="middle"/><p>  
+<p align="center"><img src="man/figures/schematic.v5.2.png" width="75%" height="75%" align="middle"/><\p>  
   
 - [Installation](#Installation)
 - [Example](#Example)
@@ -102,11 +102,11 @@ pbmc10k <- prepare_data(pbmc10k,
 #> [1] "Start remove doublets"
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="75%" height="75%"/>
+<p align="center"><img src="man/figures/README-unnamed-chunk-4-1.png" width="75%" height="75%"/><\p>
 
     #> [1] "Start low quality cell removal"
 
-<img src="man/figures/README-unnamed-chunk-4-2.png" width="75%" height="75%"/><img src="man/figures/README-unnamed-chunk-4-3.png" width="75%" height="75%"/>
+<p align="center"><img src="man/figures/README-unnamed-chunk-4-2.png" width="75%" height="75%"/><img src="man/figures/README-unnamed-chunk-4-3.png" width="75%" height="75%"/><\p>
 
     #> [1] "Start clustering data"
     #> [1] "Number of used dimensions for clustering: 26"
