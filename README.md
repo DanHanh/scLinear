@@ -44,7 +44,8 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 ```
 
 ### Running scLinear
-You may run scLinear directly providing the Seurat object as input. List of optional parameters:
+You may run scLinear directly providing the Seurat object as input. List of optional parameters:  
+  
 `remove_doublets` Removal of doublets. TRUE (default) or FALSE.  
 `low_qc_cell_removal` Removal of low quality cells. TRUE (default) or FALSE.  
 `anno_level` Level of annotation. 1, 2, 3 or 4. See https://github.com/JiaLiVUMC/scMRMA for more details.  
@@ -61,9 +62,9 @@ You may run scLinear directly providing the Seurat object as input. List of opti
 `assay_name` = "RNA" (default).  
 `print_plots` TRUE or FALSE (default).  
 
+The scLinear function uses the counts slot from the RNA assay to predict the ADT assay. The functions performs the default preprocessing steps and returns a Seurat object with the added "predicted_ADT" assay.
+  
 ``` r
-## The scLinear function uses the counts slot from the RNA assay to predict the ADT assay. The functions performs the default preprocessing steps and returns a Seurat object with the added "predicted_ADT" assay.
-
 pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> [1] "Start remove doublets"
 #> [1] "Start low quality cell removal"
