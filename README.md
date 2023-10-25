@@ -18,8 +18,11 @@ You can install the development version of scLinear from
 # install.packages("devtools")
 devtools::install_github("DanHanh/scLinear")
 ```
+## Example
+After installing scLinear you may run the following example.
 
-## Get example data
+## Get data
+The PBMC data can be downloaded from the 10X Genomics website (https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3). Then the following code can be used to generate a Seurat object.
 
 ``` r
 set.seed(42)
