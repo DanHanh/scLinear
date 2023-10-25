@@ -45,21 +45,21 @@ Seurat::DefaultAssay(pbmc10k) <- "RNA"
 
 ### Running scLinear
 You may run scLinear directly providing the Seurat object as input. List of optional parameters:
-`remove_doublets` Removal of doublets. TRUE (default) or FALSE
-`low_qc_cell_removal` Removal of low quality cells. TRUE (default) or FALSE
-`anno_level` Level of annotation. 1, 2, 3 or 4. See https://github.com/JiaLiVUMC/scMRMA for more details.
-`samples` NULL (default)
-`integrate_data` TRUE or FALSE (default)
-`remove_empty_droplets` Removal of empty droplets. TRUE or FALSE (default)
-`lower` = 100 (default)
-`FDR` = 0.01 (default)
-`annotation_selfCluster` TRUE or FALSE (default)
-`resolution` = 0.8 (default)
-`seed` = 42 (default)
-`return_plots` TRUE or FALSE (default)
-`model` = "all" (default)
-`assay_name` = "RNA" (default)
-`print_plots` TRUE or FALSE (default)
+`remove_doublets` Removal of doublets. TRUE (default) or FALSE.  
+`low_qc_cell_removal` Removal of low quality cells. TRUE (default) or FALSE.  
+`anno_level` Level of annotation. 1, 2, 3 or 4. See https://github.com/JiaLiVUMC/scMRMA for more details.  
+`samples` NULL (default).  
+`integrate_data` TRUE or FALSE (default).  
+`remove_empty_droplets` Removal of empty droplets. TRUE or FALSE (default).  
+`lower` = 100 (default).  
+`FDR` = 0.01 (default).  
+`annotation_selfCluster` TRUE or FALSE (default).  
+`resolution` = 0.8 (default).  
+`seed` = 42 (default).  
+`return_plots` TRUE or FALSE (default).  
+`model` = "all" (default).  
+`assay_name` = "RNA" (default).  
+`print_plots` TRUE or FALSE (default).  
 
 ``` r
 ## The scLinear function uses the counts slot from the RNA assay to predict the ADT assay. The functions performs the default preprocessing steps and returns a Seurat object with the added "predicted_ADT" assay.
