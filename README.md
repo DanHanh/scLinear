@@ -9,6 +9,9 @@
 The goal of scLinear is to predict antibody derived tags (ADT) data from
 gene expression data in scRNA-seq data. it includes all the necessary pre-processing steps, comes equiped with pre-trained models and also allows the training of new models.
 <img src="man/figures/schematic.v5.2.png" width="100%" />
+- [Installation](#Installation)
+- [Example](#Example)
+- [Citation](#Citation)
 ## Installation
 
 You can install the development version of scLinear from
@@ -21,7 +24,7 @@ devtools::install_github("DanHanh/scLinear")
 ## Example
 After installing scLinear you may run the following example.
 
-## Get data
+### Get data
 The PBMC data can be downloaded from the 10X Genomics website (https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3). Then the following code can be used to generate a Seurat object.
 
 ``` r
@@ -40,7 +43,8 @@ pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]]
 Seurat::DefaultAssay(pbmc10k) <- "RNA"
 ```
 
-## The simplest way to use scLinear is to use the scLinear() function directly
+### Running scLinear
+You may run scLinear directly providing the Seurat object as input. 
 
 ``` r
 ## The scLinear function uses the counts slot from the RNA assay to predict the ADT assay. The functions performs the default preprocessing steps and returns a Seurat object with the added "predicted_ADT" assay.
@@ -163,3 +167,5 @@ pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k@assays[["RNA"]],
                         normalize = TRUE)
 ```
+## Citation
+Daniel Hanhart et al., "scLinear; against the deep current to predict protein abundance at single-cell resolution"
