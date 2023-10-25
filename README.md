@@ -59,7 +59,7 @@ You may run scLinear directly providing the Seurat object as input. List of opti
 `resolution` = 0.8 (default).  
 `seed` = 42 (default).  
 `return_plots` TRUE or FALSE (default).  
-`model` = "all" (default).  
+`model` Available models "all" (default), "bcell", "tcell" and "nkcell".
 `assay_name` = "RNA" (default).  
 `print_plots` TRUE or FALSE (default).  
 
@@ -92,7 +92,7 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 ## Other functions
 scLinear calls different sub-workflows which can also be called independentaly.
 ### Prepare data
-`prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as [above](#Running-scLinear") 
+`prepare_data()` performes all the necessay pre-processing steps. Parameters are the same as [above](##Running-scLinear") 
 
 ``` r
 pbmc10k <- prepare_data(pbmc10k,
@@ -131,21 +131,12 @@ pbmc10k <- prepare_data(pbmc10k,
 <img src="man/figures/README-unnamed-chunk-4-4.png" width="75%" height="75%"/>
 
 ### Use a pre-trained model
+Load pre-trained model (available models: all, bcell, tcell, nkcell).  
+if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.  
 
 ``` r
-## Load pre-trained model (available models: all, bcell, tcell, nkcell)
-# if a pretrained model is used it is advided to use the raw data slot from the RNA assay, and normalization = TRUE, to ensure that the input data is normalized the same way as for the training data.
 pipe <- create_adt_predictor()
 pipe <- load_pretrained_model(pipe, model = "all")
-
-eval_res <- evaluate_predictor(pipe,
-                pbmc10k@assays$RNA,
-                pbmc10k@assays$ADT,
-                normalize_gex = TRUE,
-                normalize_adt = TRUE)
-print(eval_res)
-#>        RMSE   Pearson  Spearman
-#> 1 0.8107419 0.8534997 0.7175379
 
 pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k@assays[["RNA"]],
@@ -153,6 +144,18 @@ pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 ```
 
 ### Train a new model
+
+To train a new model the following commands need to be used. 
+`create_adt_predictor()` initialize predictor.
+`fit_predictor()` with parameters
+* `pipe` predictor initialized above.  
+* `gexp_train` gene expression matrix of training set (i.e. RNA assay from Seurat object).  
+* `adt_train` ADT matrix of training set.   
+* `normalize_gex` Gene expression normalization. TRUE (default) or FALSE.
+* `normalize_adt` ADT normalization. TRUE (default) or FALSE.
+  
+Subsequently, the `evaluate_predictor` command can be used (same parameters with `fit_predictor`) to return the RMSE, Pearson and Spearman of the training process.  
+An example of this process can be found below.  
 
 ``` r
 ## Create a training and a test set
