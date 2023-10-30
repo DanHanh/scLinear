@@ -12,7 +12,7 @@
 #' sobj <- anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
 #' }
 
-anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species = "Hs", ...){
+anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species = "Hs", seed = 42, ...){
   default_assay <- Seurat::DefaultAssay(object)
   Seurat::DefaultAssay(object) <- "RNA"
 
