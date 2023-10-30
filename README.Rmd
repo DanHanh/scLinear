@@ -33,6 +33,18 @@ You can install the development version of scLinear from [GitHub](https://github
 ``` r
 # install.packages("devtools")
 devtools::install_github("DanHanh/scLinear")
+
+# It is maybe necessary to first install miniconda and create a conda environment for riticulate:
+
+reticulate::install_miniconda()
+reticulate::conda_update()
+reticulate::conda_create("r-reticulate")
+reticulate::conda_install(envname = "r-reticulate", packages = "conda")
+reticulate::use_condaenv("r-reticulate")
+
+# afterwards the python dependencies can be installed with:
+scLinear::install_pyton_dependencies()
+
 ```
 
 ## Get example data
