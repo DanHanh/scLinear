@@ -20,7 +20,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
   Seurat::DefaultAssay(object) <- "RNA"
 
   if(remove_empty_droplets){
-    object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples)
+    object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples, seed = seed)
     plot_list[["empty_dropts"]] <- object[[2]]
     object <- object[[1]]
   }
@@ -31,14 +31,14 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_doublets){
     print("Start remove doublets")
-    object <- object %>% remove_doublets(samples = samples, print_plots = print_plots)
+    object <- object %>% remove_doublets(samples = samples, print_plots = print_plots, seed = seed)
     plot_list[["doublets"]] <- object[[2]]
     object <- object[[1]]
   }
 
   if(low_qc_cell_removal){
     print("Start low quality cell removal")
-    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots)
+    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots, seed = seed)
     plot_list[["low_qc_cells"]] <- object[[2]]
     object <- object[[1]]
   }
@@ -50,18 +50,18 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(integrate_data){
     print("Start integrate data")
-    object <- integrate_samples(object, samples = samples)
+    object <- integrate_samples(object, samples = samples, seed = seed)
   }
 
   print("Start clustering data")
-  object <- cluster_data(object, resolution = resolution)
+  object <- cluster_data(object, resolution = resolution, seed = seed)
   Seurat::Idents(object) <- object@meta.data[["seurat_clusters"]]
 
   print("Start cell type annotation")
   if(annotation_selfCluster){
-    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.), species = species)
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.), species = species, seed = seed)
   }else{
-    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL, species = species)
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL, species = species, seed = seed)
   }
 
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")
@@ -90,7 +90,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 #' \dontrun{
 #' sobj <- scLinear(object = sobj)
 #' }
-scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE){
+scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE, species = "Hs"){
   set.seed(seed)
   object <- prepare_data(object,
                          remove_doublets = remove_doublets,
@@ -105,7 +105,8 @@ scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE,
                          resolution = resolution,
                          seed = seed,
                          return_plots = FALSE,
-                         print_plots = print_plots)
+                         print_plots = print_plots,
+                         species = species)
 
   pipe <- create_adt_predictor()
   pipe <- load_pretrained_model(pipe, model = model)

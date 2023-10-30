@@ -20,7 +20,8 @@ scLinear(
   return_plots = FALSE,
   model = "all",
   assay_name = "RNA",
-  print_plots = FALSE
+  print_plots = FALSE,
+  species = "Hs"
 )
 }
 \arguments{

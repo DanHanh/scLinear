@@ -18,7 +18,8 @@ prepare_data(
   resolution = 0.8,
   seed = 42,
   return_plots = FALSE,
-  print_plots = TRUE
+  print_plots = TRUE,
+  species = "Hs"
 )
 }
 \arguments{
