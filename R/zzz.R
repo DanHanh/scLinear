@@ -12,7 +12,7 @@ scanpy <- NULL
 anndata <- NULL
 
 .onLoad <- function(libname, pkgname){
-    reticulate::configure_environment(pkgname)
+    #reticulate::configure_environment(pkgname)
     module_path <-  base::system.file("python",package = "scLinear")
     numpy <<- reticulate::import("numpy", delay_load = TRUE)
     joblib <<- reticulate::import("joblib", delay_load = TRUE)
