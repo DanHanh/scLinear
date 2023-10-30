@@ -153,8 +153,8 @@ integrate_samples <- function(object, method = "rpca", samples = "samples"){
 #' \dontrun{
 #' cluster_data(object, resolution = 0.8)
 #' }
-cluster_data <- function(object, resolution = 0.8, npcs = NULL){
-
+cluster_data <- function(object, resolution = 0.8, npcs = NULL, seed = 42){
+  set.seed(seed)
   default_assay <- Seurat::DefaultAssay(object)
 
   if(default_assay == "integrated"){
