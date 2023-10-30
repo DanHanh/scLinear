@@ -16,8 +16,8 @@
 #' sobj <- mad_filtering(sobj)
 #' }
 
-mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, ...){
-
+mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, seed = 42, ...){
+  set.seed(seed)
   ##
   if(is.null(samples)){
     batch <- NULL
@@ -162,16 +162,16 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 #' \dontrun{
 #' empty_drops(object = object, lower = 100, FDR = 0.01)
 #' }
-empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL){
-
+empty_drops <- function(object, lower = 100, FDR = 0.01, samples = NULL, seed = 42, ...){
+  set.seed(seed)
   if(is.null(samples)){
-    e.out <- DropletUtils::emptyDrops(object@assays$RNA@counts, lower = lower)
+    e.out <- DropletUtils::emptyDrops(object@assays$RNA@counts, lower = lower, ...)
     is.cell <- e.out$FDR <= FDR
     object <- object[, which(is.cell)]
   }else{
     object_split <- Seurat::SplitObject(object, split.by = samples)
     for (i in names(object_split)){
-      e.out <- DropletUtils::emptyDrops(object_split[[i]]@assays$RNA@counts, lower = lower)
+      e.out <- DropletUtils::emptyDrops(object_split[[i]]@assays$RNA@counts, lower = lower, ...)
       is.cell <- e.out$FDR <= FDR
       object_split[[i]] <- object_split[[i]][, which(is.cell)]
     }

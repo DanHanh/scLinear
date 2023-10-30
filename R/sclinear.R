@@ -3,6 +3,20 @@
 #' Prepare data for modality prediction
 #'
 #' @param object A Seurat object
+#' @param remove_doublets Should doublets be removed? (TRUE,FALSE)
+#' @param low_qc_cell_removal Should low quality cells be removed using median absolute deviation?
+#' @param anno_level Level of annotation used for cell type annotation. Either a single number or a vector with multiple numbers c(1,2,3,4).
+#' @param samples Variable that contains the sample names. If set, will use rpca to integrate the samples.
+#' @param integrate_data Should the sample be integrated through the rpca method?
+#' @param remove_empty_droplets If the raw unfiltered matrix was used to create the Seurat object, empty droplets should be filtered out. (TRUE, FALSE)
+#' @param lower Lower boundary to define empty droplets. All cells with a lower amount of nFeatures are assumed to be empty.
+#' @param FDR FDR threshold to define non empty cells.
+#' @param annotation_selfCluster Should the clusters determined by Seurat be used for cell type annotation.
+#' @param resolution Resolution for louvain clustering.
+#' @param seed Used seed.
+#' @param return_plots Should plots be returned from function
+#' @param print_plots Print plots. (TRUE, FALSE)
+#' @param species Species. Relevant for cell type annotation. ("Hs", "Mm")
 #'
 #' @return object A pre-processed Seurat object  with annotated cell types
 #' @export
@@ -176,8 +190,8 @@ fit_predictor <- function(pipe, gexp_train , adt_train, slot_gex = "counts", slo
 
 #' Predict ADT values from gene expression
 #'
-#' @param gexp A
-#' @param pipe A
+#' @param gexp Matrix with gene expression data
+#' @param pipe Trained ADT predictor
 #' @param do_log1p A
 #'
 #' @return adt_assay retuns an adt assay object
@@ -224,12 +238,12 @@ adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
 
 #' Evaluate the adt predictor
 #'
-#' @param pipe A
-#' @param gexp_test A
-#' @param adt_test A
+#' @param pipe Trained ADT predictor
+#' @param gexp_test Matrix with gene expression data.
+#' @param adt_test Matrix with ADT count data.
 #' @param do_log1p A
 #'
-#' @return A
+#' @return Returns a data frame containing RSME, Pearson correlation and Spearman correlation of the tested data.
 #' @export
 #'
 #' @examples
@@ -269,8 +283,8 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 
 #' Load a pre-trained model
 #'
-#' @param pipe A pipe
-#' @param model Choose a pre-trained model to load. The pretraines models were
+#' @param pipe A ADT predictor object
+#' @param model Choose a pre-trained model to load. The pre-traines models were
 #' trained on the NeurIPS data. In most cases we would recommend to use the model ("all") trained on all
 #' cell types. models available: all, bcells, tcells, nkcells.
 #'
