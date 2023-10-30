@@ -9,13 +9,26 @@ torch <- NULL
 pytorch_lightning <- NULL
 sklearn <- NULL
 scanpy <- NULL
-
+anndata <- NULL
 
 .onLoad <- function(libname, pkgname){
     reticulate::configure_environment(pkgname)
 
-    # If the automated installation of necessary python packages does not work,
-    # tries to install them manual
+
+    # Test if reticulate environment is available
+    if(!reticulate::py_available()){
+      # Check if reticulate environment is available
+      reticulate.env.exists <- any(grepl("r-reticulate/python", reticulate::conda_list()[["python"]]))
+      # If no reticulate environment exists, create one
+      if(!(reticulate.env.exists)){
+        create.environment <- readline('create conda environment with name "r-reticulate" (yes/no)?')
+        if(create.environment == "y" || create.environment == "yes"){
+          reticulate::conda_create(envname = "r-reticulate")
+          reticulate::conda_install(envname = "r-reticulate", packages = "conda")
+        }
+      }
+    }
+
 
     module_path <-  base::system.file("python",package = "scLinear")
     numpy <<- reticulate::import("numpy", delay_load = TRUE)
@@ -23,7 +36,9 @@ scanpy <- NULL
     torch <<- reticulate::import_from_path(module = "torch", delay_load = TRUE)
     pytorch_lightning <<- reticulate::import_from_path(module = "pytorch_lightning", delay_load = TRUE)
     sklearn <<- reticulate::import_from_path(module = "sklearn", delay_load = TRUE)
+    anndata <<- reticulate::import("anndata", delay_load = TRUE)
     scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
+
     preprocessing <<- reticulate::import_from_path(module = "preprocessing", path = module_path, delay_load = TRUE)
     prediction <<- reticulate::import_from_path(module = "prediction", path = module_path, delay_load = TRUE)
     evaluate <<- reticulate::import_from_path(module = "evaluate", path = module_path, delay_load = TRUE)

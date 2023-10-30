@@ -35,7 +35,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_empty_droplets){
     object <- empty_drops(object = object, lower = lower, FDR = FDR, samples = samples, seed = seed)
-    plot_list[["empty_dropts"]] <- object[[2]]
+    #plot_list[["empty_dropts"]] <- object[[2]]
     object <- object[[1]]
   }
 
