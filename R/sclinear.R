@@ -12,7 +12,7 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE, species = "Hs"){
   set.seed(seed)
 
   plot_list <- list()
@@ -59,9 +59,9 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   print("Start cell type annotation")
   if(annotation_selfCluster){
-    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.))
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = Seurat::Idents(.), species = species)
   }else{
-    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL)
+    object <- object %>% anno_celltypes(anno_level = anno_level, selfClusters = NULL, species = species)
   }
 
   p1 <- Seurat::DimPlot(object, group.by = "cell_type", label = TRUE, repel = TRUE) + ggplot2::theme(legend.position = "null")

@@ -40,7 +40,6 @@ Config/reticulate:
       list(package = "scikit-learn", pip=FALSE),
       list(package = "anndata", pip=FALSE),
       list(package = "joblib", pip=FALSE),
-      list(package = "pytorch", pip=FALSE),
       list(package = "pytorch-lightning", pip=FALSE)
     )
   )

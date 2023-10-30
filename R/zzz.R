@@ -13,6 +13,24 @@ scanpy <- NULL
 
 .onLoad <- function(libname, pkgname){
     reticulate::configure_environment(pkgname)
+
+    # If the automated installation of necessary python packages does not work,
+    # tries to install them manual
+
+    if(any(
+      !all(sapply(c("numpy", "sklearn", "joblib", "anndata", "torch", "scanpy"), function(x){reticulate::py_module_available(x)}))
+    )){
+      install.dependencies <- readline('Do you want to install the necessary python packages (yes/no)?')
+      if(install.dependencies == "y" || install.dependencies == "yes"){
+        if(!reticulate::py_module_available("numpy")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "numpy")))
+        if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "scikit-learn")))
+        if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "anndata")))
+        if(!reticulate::py_module_available("joblib")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "joblib")))
+        if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "pytorch-lightning")))
+        if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "scanpy")))
+      }
+    }
+
     module_path <-  base::system.file("python",package = "scLinear")
     numpy <<- reticulate::import("numpy", delay_load = TRUE)
     joblib <<- reticulate::import("joblib", delay_load = TRUE)
