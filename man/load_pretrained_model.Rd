@@ -7,9 +7,9 @@
 load_pretrained_model(pipe, model = "all")
 }
 \arguments{
-\item{pipe}{A pipe}
+\item{pipe}{A ADT predictor object}
 
-\item{model}{Choose a pre-trained model to load. The pretraines models were
+\item{model}{Choose a pre-trained model to load. The pre-traines models were
 trained on the NeurIPS data. In most cases we would recommend to use the model ("all") trained on all
 cell types. models available: all, bcells, tcells, nkcells.}
 }

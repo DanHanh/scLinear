@@ -7,9 +7,9 @@
 adt_predict(pipe, gexp, slot = "counts", normalize = TRUE)
 }
 \arguments{
-\item{pipe}{A}
+\item{pipe}{Trained ADT predictor}
 
-\item{gexp}{A}
+\item{gexp}{Matrix with gene expression data}
 
 \item{do_log1p}{A}
 }

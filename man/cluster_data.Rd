@@ -4,7 +4,7 @@
 \alias{cluster_data}
 \title{Title}
 \usage{
-cluster_data(object, resolution = 0.8, npcs = NULL)
+cluster_data(object, resolution = 0.8, npcs = NULL, seed = 42)
 }
 \arguments{
 \item{object}{A}

@@ -24,6 +24,34 @@ prepare_data(
 }
 \arguments{
 \item{object}{A Seurat object}
+
+\item{remove_doublets}{Should doublets be removed? (TRUE,FALSE)}
+
+\item{low_qc_cell_removal}{Should low quality cells be removed using median absolute deviation?}
+
+\item{anno_level}{Level of annotation used for cell type annotation. Either a single number or a vector with multiple numbers c(1,2,3,4).}
+
+\item{samples}{Variable that contains the sample names. If set, will use rpca to integrate the samples.}
+
+\item{integrate_data}{Should the sample be integrated through the rpca method?}
+
+\item{remove_empty_droplets}{If the raw unfiltered matrix was used to create the Seurat object, empty droplets should be filtered out. (TRUE, FALSE)}
+
+\item{lower}{Lower boundary to define empty droplets. All cells with a lower amount of nFeatures are assumed to be empty.}
+
+\item{FDR}{FDR threshold to define non empty cells.}
+
+\item{annotation_selfCluster}{Should the clusters determined by Seurat be used for cell type annotation.}
+
+\item{resolution}{Resolution for louvain clustering.}
+
+\item{seed}{Used seed.}
+
+\item{return_plots}{Should plots be returned from function}
+
+\item{print_plots}{Print plots. (TRUE, FALSE)}
+
+\item{species}{Species. Relevant for cell type annotation. ("Hs", "Mm")}
 }
 \value{
 object A pre-processed Seurat object  with annotated cell types

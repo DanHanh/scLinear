@@ -4,7 +4,7 @@
 \alias{empty_drops}
 \title{Remove empty droplets}
 \usage{
-empty_drops(object, lower = 100, FDR = 0.01, samples = NULL)
+empty_drops(object, lower = 100, FDR = 0.01, samples = NULL, seed = 42, ...)
 }
 \arguments{
 \item{object}{A Seurat object}

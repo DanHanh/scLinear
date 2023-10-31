@@ -12,6 +12,7 @@ mad_filtering(
   mttype = "higher",
   remove_cells = TRUE,
   print_plots = TRUE,
+  seed = 42,
   ...
 )
 }

@@ -9,6 +9,7 @@ anno_celltypes(
   anno_level = 2,
   selfClusters = NULL,
   species = "Hs",
+  seed = 42,
   ...
 )
 }

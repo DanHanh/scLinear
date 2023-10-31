@@ -14,16 +14,16 @@ evaluate_predictor(
 )
 }
 \arguments{
-\item{pipe}{A}
+\item{pipe}{Trained ADT predictor}
 
-\item{gexp_test}{A}
+\item{gexp_test}{Matrix with gene expression data.}
 
-\item{adt_test}{A}
+\item{adt_test}{Matrix with ADT count data.}
 
 \item{do_log1p}{A}
 }
 \value{
-A
+Returns a data frame containing RSME, Pearson correlation and Spearman correlation of the tested data.
 }
 \description{
 Evaluate the adt predictor

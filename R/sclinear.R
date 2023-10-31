@@ -40,7 +40,12 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
   }
 
   if(!("mito_percent" %in% names(object@meta.data))){
-    object$mito_percent <- Seurat::PercentageFeatureSet(object, pattern = "^MT-")
+    if(species == "Hs"){
+      object$mito_percent <- Seurat::PercentageFeatureSet(object, pattern = "^MT-")
+    }else{
+      object$mito_percent <- Seurat::PercentageFeatureSet(object, pattern = "^mt-")
+    }
+
   }
 
   if(remove_doublets){
