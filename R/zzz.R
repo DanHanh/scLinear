@@ -15,9 +15,9 @@ typing <- NULL
 
 
 preprocessing <- NULL
-prediction <- NULL
 evaluate <- NULL
-
+prediction <- NULL
+predictor <- NULL
 
 .onLoad <- function(libname, pkgname){
   numpy <<- reticulate::import("numpy", delay_load = TRUE)
@@ -36,8 +36,9 @@ evaluate <- NULL
   # load package specific python modules
   module_path <-  base::system.file("python",package = utils::packageName())
   preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
-  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
   evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
+  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
+  predictor <<- reticulate::import_from_path("predictor",module_path,delay_load = TRUE)
 }
 
 
