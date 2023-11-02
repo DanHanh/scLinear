@@ -1,9 +1,9 @@
 """High level functions for running the model prediction pipeline."""
-from typing import Optional, Tuple, Dict, Union
-
-import anndata as ad
-import numpy as np
-import torch
+# from typing import Optional, Tuple, Dict, Union
+# 
+# import anndata as ad
+# import numpy as np
+# import torch
 # import pytorch_lightning as pl
 # from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 # from sklearn.kernel_ridge import KernelRidge
@@ -14,6 +14,11 @@ import torch
 # 
 # #from babel_models import VanillaNN, IdentityTransformer, BabelDance
 # from preprocessing import GEXPreprocessor
+
+def two_plus_two(
+  
+)
+  return 4
 
 # class ADTPredictor:
 #     """Wrapper for running the GEX to ADT prediction pipeline."""
