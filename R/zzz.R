@@ -2,32 +2,48 @@
 
 
 
-preprocessing <- reticulate::import_from_path("preprocessing",file.path("inst", "python"))
-prediction <- reticulate::import_from_path("prediction",file.path("inst", "python"))
-evaluate <- reticulate::import_from_path("evaluate",file.path("inst", "python"))
-
-for (obj in names(preprocessing)) {assign(obj, NULL)}
-for (obj in names(prediction)) {assign(obj, NULL)}
-for (obj in names(evaluate)) {assign(obj, NULL)}
 
 
-.onLoad <- function(libname, pkgname) {
-  preprocessing <- reticulate::import_from_path("preprocessing",
-                system.file("python", package = packageName()),delay_load = TRUE)
-  prediction <- reticulate::import_from_path("prediction",
-                system.file("python", package = packageName()),delay_load = TRUE)
-  evaluate <- reticulate::import_from_path("evaluate",
-                system.file("python", package = packageName()),delay_load = TRUE)
+preprocessing <- NULL
+prediction <- NULL
+evaluate <- NULL
 
 
-
-  for (obj in names(preprocessing)){assignInMyNamespace(obj, preprocessing[[obj]])}
-  for (obj in names(prediction)){assignInMyNamespace(obj, prediction[[obj]])}
-  for (obj in names(evaluate)){assignInMyNamespace(obj, evaluate[[obj]])}
-
-
-
+.onLoad <- function(libname, pkgname){
+  preprocessing <- reticulate::import_from_path("preprocessing",system.file("python", package = packageName()),delay_load = TRUE)
+  prediction <- reticulate::import_from_path("prediction",system.file("python", package = packageName()),delay_load = TRUE)
+  evaluate <- reticulate::import_from_path("evaluate",system.file("python", package = packageName()),delay_load = TRUE)
 }
+
+
+
+
+# preprocessing <- reticulate::import_from_path("preprocessing",file.path("inst", "python"))
+# prediction <- reticulate::import_from_path("prediction",file.path("inst", "python"))
+# evaluate <- reticulate::import_from_path("evaluate",file.path("inst", "python"))
+#
+# for (obj in names(preprocessing)) {assign(obj, NULL)}
+# for (obj in names(prediction)) {assign(obj, NULL)}
+# for (obj in names(evaluate)) {assign(obj, NULL)}
+#
+#
+# .onLoad <- function(libname, pkgname) {
+#   preprocessing <- reticulate::import_from_path("preprocessing",
+#                 system.file("python", package = packageName()),delay_load = TRUE)
+#   prediction <- reticulate::import_from_path("prediction",
+#                 system.file("python", package = packageName()),delay_load = TRUE)
+#   evaluate <- reticulate::import_from_path("evaluate",
+#                 system.file("python", package = packageName()),delay_load = TRUE)
+#
+#
+#
+#   for (obj in names(preprocessing)){assignInMyNamespace(obj, preprocessing[[obj]])}
+#   for (obj in names(prediction)){assignInMyNamespace(obj, prediction[[obj]])}
+#   for (obj in names(evaluate)){assignInMyNamespace(obj, evaluate[[obj]])}
+#
+#
+#
+# }
 
 
 
