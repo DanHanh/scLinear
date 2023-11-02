@@ -10,9 +10,7 @@ torch <- NULL
 pytorch_lightning <- NULL
 sklearn <- NULL
 warnings <- NULL
-preprocessing <- NULL
-evaluate <- NULL
-prediction <- NULL
+scipy <- NULL
 
 preprocessing <- NULL
 prediction <- NULL
@@ -29,6 +27,7 @@ evaluate <- NULL
   scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
   os <<- reticulate::import("os", delay_load = TRUE)
   warnings <<- reticulate::import("warnings", delay_load = TRUE)
+  scipy <<- reticulate::import("scipy", delay_load = TRUE)
 
   # load package specific python modules
   module_path <-  base::system.file("python",package = utils::packageName())
