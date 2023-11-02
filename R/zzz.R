@@ -10,9 +10,10 @@ evaluate <- NULL
 
 
 .onLoad <- function(libname, pkgname){
-  preprocessing <<- reticulate::import_from_path("preprocessing",base::system.file("python", package = utils::packageName()),delay_load = TRUE)
-  prediction <<- reticulate::import_from_path("prediction",base::system.file("python", package = utils::packageName()),delay_load = TRUE)
-  evaluate <<- reticulate::import_from_path("evaluate",base::system.file("python", package = utils::packageName()),delay_load = TRUE)
+  module_path <-  base::system.file("python",package = utils::packageName())
+  preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
+  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
+  evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
 
   # utils::assignInMyNamespace("preprocessing",preprocessing)
   # utils::assignInMyNamespace("prediction",prediction)
