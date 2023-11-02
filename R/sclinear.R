@@ -199,7 +199,7 @@ fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
   if( !is.null(gexp_test) ){
     #test if train and test set have the same names, in the correct order.
     if(all(all(rownames(gexp_train) == rownames(gexp_test)))){
-      pipe$fit(gexp_train_py, adt_train_py, gex_names = rownames(gexp_train), adt_names = rownames(adt_train), gex_test = gexp_test_py, adt_test)
+      pipe$fit(gexp_train_py, adt_train_py, gex_names = rownames(gexp_train), adt_names = rownames(adt_train), gex_test = gexp_test_py)
       }else{stop("train and test set do not have the same / order of names.")}
   }else{
     pipe$fit(gexp_train_py, adt_train_py, gex_names = rownames(gexp_train), adt_names = rownames(adt_train))

@@ -8,6 +8,7 @@ fit_predictor(
   pipe,
   gexp_train,
   adt_train,
+  gexp_test = NULL,
   slot_gex = "counts",
   slot_adt = "counts",
   normalize_gex = TRUE,
