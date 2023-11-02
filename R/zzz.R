@@ -1,8 +1,18 @@
 
 
 
-
-
+numpy <- NULL
+anndata <- NULL
+scanpy <- NULL
+joblib <- NULL
+os <- NULL
+torch <- NULL
+pytorch_lightning <- NULL
+sklearn <- NULL
+warnings <- NULL
+preprocessing <- NULL
+evaluate <- NULL
+prediction <- NULL
 
 preprocessing <- NULL
 prediction <- NULL
@@ -10,28 +20,21 @@ evaluate <- NULL
 
 
 .onLoad <- function(libname, pkgname){
+  numpy <<- reticulate::import("numpy", delay_load = TRUE)
+  joblib <<- reticulate::import("joblib", delay_load = TRUE)
+  torch <<- reticulate::import(module = "torch", delay_load = TRUE)
+  pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
+  sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
+  anndata <<- reticulate::import("anndata", delay_load = TRUE)
+  scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
+  os <<- reticulate::import("os", delay_load = TRUE)
+  warnings <<- reticulate::import("warnings", delay_load = TRUE)
+
+  # load package specific python modules
   module_path <-  base::system.file("python",package = utils::packageName())
   preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
   prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
   evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
-}
-
-
-
-#' Title
-#'
-#' @return NULL
-#' @export
-#'
-#' @examples
-#' onLoad()
-onLoad <- function(){
-
-  module_path <-  base::system.file("python",package = utils::packageName())
-  preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
-  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
-  evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
-  return(NULL)
 }
 
 
