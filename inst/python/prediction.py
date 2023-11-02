@@ -1,5 +1,5 @@
 """High level functions for running the model prediction pipeline."""
-from typing import Optional, Tuple, Dict, Union
+#from typing import Optional, Tuple, Dict, Union
 
 import anndata as ad
 import numpy as np
@@ -13,7 +13,7 @@ import warnings
 from torch.utils.data import TensorDataset, DataLoader
 
 #from babel_models import Optional, VanillaNN, IdentityTransformer, BabelDance
-from preprocessing import GEXPreprocessor
+#from preprocessing import GEXPreprocessor
 
 class ADTPredictor:
     """Wrapper for running the GEX to ADT prediction pipeline."""
