@@ -10,6 +10,7 @@ evaluate <- NULL
 
 
 .onLoad <- function(libname, pkgname){
+  reticulate::configure_environment(pkgname)
   module_path <-  base::system.file("python",package = utils::packageName())
   preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
   prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
