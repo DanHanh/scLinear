@@ -18,9 +18,9 @@ anndata <- NULL
     tryCatch({
       numpy <<- reticulate::import("numpy", delay_load = TRUE)
       joblib <<- reticulate::import("joblib", delay_load = TRUE)
-      torch <<- reticulate::import_from_path(module = "torch", delay_load = TRUE)
-      pytorch_lightning <<- reticulate::import_from_path(module = "pytorch_lightning", delay_load = TRUE)
-      sklearn <<- reticulate::import_from_path(module = "sklearn", delay_load = TRUE)
+      torch <<- reticulate::import(module = "torch", delay_load = TRUE)
+      pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
+      sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
       anndata <<- reticulate::import("anndata", delay_load = TRUE)
       scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
 

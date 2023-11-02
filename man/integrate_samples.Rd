@@ -4,7 +4,7 @@
 \alias{integrate_samples}
 \title{Title}
 \usage{
-integrate_samples(object, method = "rpca", samples = "samples")
+integrate_samples(object, method = "rpca", samples = "samples", seed = 42)
 }
 \arguments{
 \item{object}{A}

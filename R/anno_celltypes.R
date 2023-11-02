@@ -97,8 +97,8 @@ visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
 #' \dontrun{
 #' #' integrate_samples()
 #' }
-integrate_samples <- function(object, method = "rpca", samples = "samples"){
-
+integrate_samples <- function(object, method = "rpca", samples = "samples", seed = 42){
+  set.seed(42)
   if(typeof(object) == "list"){
     object_list <- object
   }else{
