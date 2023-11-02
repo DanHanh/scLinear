@@ -10,19 +10,29 @@ evaluate <- NULL
 
 
 .onLoad <- function(libname, pkgname){
-  reticulate::configure_environment(pkgname)
   module_path <-  base::system.file("python",package = utils::packageName())
   preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
   prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
   evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
-
-  # utils::assignInMyNamespace("preprocessing",preprocessing)
-  # utils::assignInMyNamespace("prediction",prediction)
-  # utils::assignInMyNamespace("evaluate",evaluate)
-
 }
 
 
+
+#' Title
+#'
+#' @return NULL
+#' @export
+#'
+#' @examples
+#' onLoad()
+onLoad <- function(){
+
+  module_path <-  base::system.file("python",package = utils::packageName())
+  preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
+  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
+  evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
+  return(NULL)
+}
 
 
 # preprocessing <- reticulate::import_from_path("preprocessing",file.path("inst", "python"))
