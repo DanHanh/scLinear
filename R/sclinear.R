@@ -169,26 +169,41 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' \dontrun{
 #' fit_predictor(pipe = pipe, gex_train = object@assays$RNA , adt_train = object@assays$ADT)
 #' }
-fit_predictor <- function(pipe, gexp_train , adt_train, slot_gex = "counts", slot_adt = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
+fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
+                          slot_gex = "counts", slot_adt = "counts",
+                          normalize_gex = TRUE, normalize_adt = TRUE){
 
 
-  gexp_matrix <- Seurat::GetAssayData(gexp_train, slot = slot_gex)
-  adt_matrix <- Seurat::GetAssayData(adt_train, slot = slot_adt)
+  ## test if Seurat assay or matrix like object
+  if(class(gexp_train)[1] == "Assay"){ gexp_train <- Seurat::GetAssayData(gexp_train, slot = slot_gex) }
+  if(class(adt_train)[1] == "Assay"){ adt_train <- Seurat::GetAssayData(adt_train, slot = slot_adt) }
+
+  if(!is.null(gexp_test)){
+    if(class(gexp_test)[1] == "Assay"){ gexp_test <- Seurat::GetAssayData(gexp_test, slot = slot_gex) }
+  }
 
 
 
   if(normalize_gex){
-    gexp_matrix <- gexp_normalize(gexp_matrix)
+    gexp_train <- gexp_normalize(gexp_train)
+    if( !is.null(gexp_test)){gexp_test <- gexp_normalize(gexp_test)}
   }
   if(normalize_adt){
-    adt_matrix <- Seurat::NormalizeData(adt_matrix, normalization.method = "CLR", margin = 2)
+    adt_train <- Seurat::NormalizeData(adt_train, normalization.method = "CLR", margin = 2)
   }
 
-  gexp_matrix_py <- reticulate::r_to_py(Matrix::t(gexp_matrix))
-  adt_matrix_py <- reticulate::r_to_py(Matrix::t(adt_matrix))
+  gexp_train_py <- reticulate::r_to_py(Matrix::t(gexp_train))
+  adt_train_py <- reticulate::r_to_py(Matrix::t(adt_train))
+  if( !is.null(gexp_test)){ gexp_test_py <- reticulate::r_to_py(Matrix::t(gexp_test)) }
 
-  pipe$fit(gexp_matrix_py, adt_matrix_py, gex_names = rownames(gexp_matrix), adt_names = rownames(adt_matrix))
-
+  if( !is.null(gexp_test) ){
+    #test if train and test set have the same names, in the correct order.
+    if(all(all(rownames(gexp_train) == rownames(gexp_test)))){
+      pipe$fit(gexp_train_py, adt_train_py, gex_names = rownames(gexp_train), adt_names = rownames(adt_train), gex_test = gexp_test_py, adt_test)
+      }else{stop("train and test set do not have the same / order of names.")}
+  }else{
+    pipe$fit(gexp_train_py, adt_train_py, gex_names = rownames(gexp_train), adt_names = rownames(adt_train))
+  }
   return(pipe)
 }
 
