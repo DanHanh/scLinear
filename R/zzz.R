@@ -11,6 +11,8 @@ pytorch_lightning <- NULL
 sklearn <- NULL
 warnings <- NULL
 scipy <- NULL
+typing <- NULL
+
 
 preprocessing <- NULL
 prediction <- NULL
@@ -28,6 +30,8 @@ evaluate <- NULL
   os <<- reticulate::import("os", delay_load = TRUE)
   warnings <<- reticulate::import("warnings", delay_load = TRUE)
   scipy <<- reticulate::import("scipy", delay_load = TRUE)
+  typing <<- reticulate::import("typing", delay_load = TRUE)
+
 
   # load package specific python modules
   module_path <-  base::system.file("python",package = utils::packageName())
