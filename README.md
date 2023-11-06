@@ -199,7 +199,8 @@ saveRDS(pbmc10k ,"./../local/pbmc10k_predicted.rds")
 
 To train a new model the following commands need to be used.  
 `create_adt_predictor()` to initialize predictor.  
-`fit_predictor()` with parameters: \* `pipe` predictor initialized
+`fit_predictor()` with parameters:  
+\* `pipe` predictor initialized
 above.  
 \* `gexp_train` gene expression matrix of training set (i.e. RNA assay
 from Seurat object).  
