@@ -40,10 +40,11 @@ predictor <- NULL
   prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
   predictor <<- reticulate::import_from_path("predictor",module_path,delay_load = TRUE)
 
-  tryCatch({ #forces to initialize python environment! first loaded module creates error!
-    reticulate::py_module_available("numpy")
-  })
-
+  suppressWarnings(
+    tryCatch({ #forces to initialize python environment! first loaded module creates error!
+      reticulate::py_module_available("numpy")
+    })
+  )
 }
 
 

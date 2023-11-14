@@ -10,7 +10,8 @@ evaluate_predictor(
   adt_test,
   slot = "counts",
   normalize_gex = TRUE,
-  normalize_adt = TRUE
+  normalize_adt = TRUE,
+  margin = 2
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ evaluate_predictor(
 \item{gexp_test}{Matrix with gene expression data.}
 
 \item{adt_test}{Matrix with ADT count data.}
+
+\item{margin}{Same as margin in NormalizeData function from Seurat}
 
 \item{do_log1p}{A}
 }

@@ -161,6 +161,7 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' @param gex_train Gene expression assay
 #' @param adt_train ADT assay
 #' @param normalize Normalize GEX and ATD assay before fitting.
+#' @param margin Same as margin in NormalizeData function from Seurat
 #'
 #' @return pipe A trained predictor object
 #' @export
@@ -171,7 +172,7 @@ create_adt_predictor <- function(do_log1p = FALSE){
 #' }
 fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
                           slot_gex = "counts", slot_adt = "counts",
-                          normalize_gex = TRUE, normalize_adt = TRUE){
+                          normalize_gex = TRUE, normalize_adt = TRUE, margin = 2){
 
 
   ## test if Seurat assay or matrix like object
@@ -189,7 +190,7 @@ fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
     if( !is.null(gexp_test)){gexp_test <- gexp_normalize(gexp_test)}
   }
   if(normalize_adt){
-    adt_train <- Seurat::NormalizeData(adt_train, normalization.method = "CLR", margin = 2)
+    adt_train <- Seurat::NormalizeData(adt_train, normalization.method = "CLR", margin = margin)
   }
 
   gexp_train_py <- reticulate::r_to_py(Matrix::t(gexp_train))
@@ -262,6 +263,7 @@ adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
 #' @param gexp_test Matrix with gene expression data.
 #' @param adt_test Matrix with ADT count data.
 #' @param do_log1p A
+#' @param margin Same as margin in NormalizeData function from Seurat
 #'
 #' @return Returns a data frame containing RSME, Pearson correlation and Spearman correlation of the tested data.
 #' @export
@@ -270,11 +272,11 @@ adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
 #' \dontrun{
 #' evaluate_predictor(pipe, gex_test, adt_test)
 #' }
-evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", normalize_gex = TRUE, normalize_adt = TRUE){
+evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", normalize_gex = TRUE, normalize_adt = TRUE, margin = 2){
 
   ### CLR transform test data
   if(normalize_adt){
-    adt_test <- Seurat::NormalizeData(adt_test, normalization.method = "CLR", margin = 2)
+    adt_test <- Seurat::NormalizeData(adt_test, normalization.method = "CLR", margin = margin)
   }
 
 

@@ -12,13 +12,16 @@ fit_predictor(
   slot_gex = "counts",
   slot_adt = "counts",
   normalize_gex = TRUE,
-  normalize_adt = TRUE
+  normalize_adt = TRUE,
+  margin = 2
 )
 }
 \arguments{
 \item{pipe}{A predictor object}
 
 \item{adt_train}{ADT assay}
+
+\item{margin}{Same as margin in NormalizeData function from Seurat}
 
 \item{gex_train}{Gene expression assay}
 
