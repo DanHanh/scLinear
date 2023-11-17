@@ -45,7 +45,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
                                    )
 
   ## if min.features is set, replace lower threshold with min.feature if n.feature is bigger
-  if(!is.null(object@meta.data$mito_percent)){
+  if(!is.null(min.features)){
     TF <- (object@meta.data$nFeature_RNA < min.features)
     nFeature_ol <- (nFeature_ol | TF)
   }
