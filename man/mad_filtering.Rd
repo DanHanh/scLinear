@@ -13,11 +13,14 @@ mad_filtering(
   remove_cells = TRUE,
   print_plots = TRUE,
   seed = 42,
+  min.features = NULL,
   ...
 )
 }
 \arguments{
 \item{object}{Seurat object}
+
+\item{samples}{Filtering is performed for each sample separatly.}
 
 \item{nmads}{Median absolute deviation that should be counted as outlier}
 
@@ -26,6 +29,14 @@ mad_filtering(
 \item{mttype}{If upper, lower , both boundaries should be used for mitochondrial percent filtering}
 
 \item{remove_cells}{should the low quality cell be removed before returning the object}
+
+\item{print_plots}{Print plots}
+
+\item{seed}{Seed}
+
+\item{min.features}{Minimum ammount of features per cell. Replaces automatically determined threshold if bigger.}
+
+\item{...}{}
 }
 \value{
 list containint a Seurat object and quality plots

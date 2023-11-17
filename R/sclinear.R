@@ -17,6 +17,7 @@
 #' @param return_plots Should plots be returned from function
 #' @param print_plots Print plots. (TRUE, FALSE)
 #' @param species Species. Relevant for cell type annotation. ("Hs", "Mm")
+#' @param min.features Minimum ammount of features per cell. Replaces automatically determined threshold if bigger.
 #'
 #' @return object A pre-processed Seurat object  with annotated cell types
 #' @export
@@ -26,7 +27,7 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE, species = "Hs"){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE, species = "Hs", min.features = NULL){
   set.seed(seed)
 
   plot_list <- list()
@@ -57,7 +58,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(low_qc_cell_removal){
     print("Start low quality cell removal")
-    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots, seed = seed)
+    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots, seed = seed, min.features = min.features)
     plot_list[["low_qc_cells"]] <- object[[2]]
     object <- object[[1]]
   }
@@ -109,7 +110,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 #' \dontrun{
 #' sobj <- scLinear(object = sobj)
 #' }
-scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE, species = "Hs"){
+scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE, species = "Hs", min.features = NULL){
   set.seed(seed)
   object <- prepare_data(object,
                          remove_doublets = remove_doublets,
@@ -125,7 +126,8 @@ scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE,
                          seed = seed,
                          return_plots = FALSE,
                          print_plots = print_plots,
-                         species = species)
+                         species = species,
+                         min.features = min.features)
 
   pipe <- create_adt_predictor()
   pipe <- load_pretrained_model(pipe, model = model)

@@ -19,7 +19,8 @@ prepare_data(
   seed = 42,
   return_plots = FALSE,
   print_plots = TRUE,
-  species = "Hs"
+  species = "Hs",
+  min.features = NULL
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ prepare_data(
 \item{print_plots}{Print plots. (TRUE, FALSE)}
 
 \item{species}{Species. Relevant for cell type annotation. ("Hs", "Mm")}
+
+\item{min.features}{Minimum ammount of features per cell. Replaces automatically determined threshold if bigger.}
 }
 \value{
 object A pre-processed Seurat object  with annotated cell types

@@ -21,7 +21,8 @@ scLinear(
   model = "all",
   assay_name = "RNA",
   print_plots = FALSE,
-  species = "Hs"
+  species = "Hs",
+  min.features = NULL
 )
 }
 \arguments{

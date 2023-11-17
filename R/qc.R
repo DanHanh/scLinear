@@ -7,6 +7,11 @@
 #' @param type If upper, lower , both boundaries should be used for filtering (for nCount_RNA and nFeature_RNA)
 #' @param mttype If upper, lower , both boundaries should be used for mitochondrial percent filtering
 #' @param remove_cells should the low quality cell be removed before returning the object
+#' @param samples Filtering is performed for each sample separatly.
+#' @param print_plots Print plots
+#' @param seed Seed
+#' @param min.features Minimum ammount of features per cell. Replaces automatically determined threshold if bigger.
+#' @param ...
 #'
 #' @return list containint a Seurat object and quality plots
 #' @export
@@ -16,7 +21,7 @@
 #' sobj <- mad_filtering(sobj)
 #' }
 
-mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, seed = 42, ...){
+mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, seed = 42, min.features = NULL, ...){
   set.seed(seed)
   ##
   if(is.null(samples)){
@@ -39,15 +44,24 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "bot
                                    batch = batch
                                    )
 
-  pMito_ol <- scater::isOutlier(object@meta.data$mito_percent,
-                               nmads = nmads,
-                               type = mttype,
-                               log = FALSE,
-                               batch = batch
-                               )
+  ## if min.features is set, replace lower threshold with min.feature if n.feature is bigger
+  if(!is.null(object@meta.data$mito_percent)){
+    TF <- (object@meta.data$nFeature_RNA < min.features)
+    nFeature_ol <- (nFeature_ol | TF)
+  }
 
 
-  object@meta.data$mad_filtered <- (nCount_ol | nFeature_ol | pMito_ol)
+  if(!is.null(object@meta.data$mito_percent)){
+    pMito_ol <- scater::isOutlier(object@meta.data$mito_percent,
+                                 nmads = nmads,
+                                 type = mttype,
+                                 log = FALSE,
+                                 batch = batch
+                                 )
+    object@meta.data$mad_filtered <- (nCount_ol | nFeature_ol | pMito_ol)
+  }else{
+    object@meta.data$mad_filtered <- (nCount_ol | nFeature_ol)
+  }
 
   ## filter visualization
   metadata <- object@meta.data %>% dplyr::select(tidyselect::any_of(c("nCount_RNA", "nFeature_RNA", "mito_percent", "mad_filtered" ))) %>% dplyr::rename(Filtered = "mad_filtered")
