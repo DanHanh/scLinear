@@ -187,6 +187,7 @@ predictor <- NULL
   finally = packageStartupMessage("all python modules installed"))
 
 
+if(FALSE){
 
 if(reticulate::py_module_available("numpy")){numpy <<- reticulate::import("numpy", delay_load = TRUE)}
 if(reticulate::py_module_available("joblib")){joblib <<- reticulate::import("joblib", delay_load = TRUE)}
@@ -235,5 +236,5 @@ if(!all(
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
 
-
+}
 }
