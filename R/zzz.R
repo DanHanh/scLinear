@@ -116,7 +116,7 @@ predictor <- NULL
                 if(!reticulate::py_module_available("pytorch_lightning")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "pytorch-lightning")))
                 if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "pytorch-lightning")))
                 if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "scikit-learn")))
-                if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "anndatag")))
+                if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "anndata")))
                 if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "scanpy")))
                 if(!reticulate::py_module_available("os")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "os")))
                 if(!reticulate::py_module_available("warnings")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "warnings")))
