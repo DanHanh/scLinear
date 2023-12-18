@@ -32,14 +32,4 @@ Imports:
     utils,
     dplyr,
     scuttle
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "scanpy", pip=FALSE),
-      list(package = "numpy", pip=FALSE),
-      list(package = "scikit-learn", pip=FALSE),
-      list(package = "anndata", pip=FALSE),
-      list(package = "joblib", pip=FALSE),
-      list(package = "pytorch-lightning", pip=FALSE)
-    )
   )
