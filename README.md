@@ -112,7 +112,7 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> Running Louvain algorithm...
 #> Maximum modularity in 10 random starts: 0.8804
 #> Number of communities: 14
-#> Elapsed time: 6 seconds
+#> Elapsed time: 0 seconds
 #> [1] "Start cell type annotation"
 #> Pre-defined cell type database panglaodb will be used.
 #> Multi Resolution Annotation Started. 
@@ -199,8 +199,7 @@ saveRDS(pbmc10k ,"./../local/pbmc10k_predicted.rds")
 
 To train a new model the following commands need to be used.  
 `create_adt_predictor()` to initialize predictor.  
-`fit_predictor()` with parameters:  
-\* `pipe` predictor initialized
+`fit_predictor()` with parameters: \* `pipe` predictor initialized
 above.  
 \* `gexp_train` gene expression matrix of training set (i.e. RNA assay
 from Seurat object).  
@@ -237,13 +236,13 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   adt_test = pbmc10k_test@assays[["ADT"]],
                   normalize_gex = TRUE,
                   normalize_adt = TRUE)
-#> RMSE: 0.34708250943458663
-#> Pearson correlation: 0.9435519356984238
-#> Spearman correlation: 0.875325450829962
+#> RMSE: 0.34617247247278315
+#> Pearson correlation: 0.9437837583092664
+#> Spearman correlation: 0.8755140852597141
 
 print(eval_res)
 #>        RMSE   Pearson  Spearman
-#> 1 0.3470825 0.9435519 0.8753255
+#> 1 0.3461725 0.9437838 0.8755141
 
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,

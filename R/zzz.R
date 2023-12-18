@@ -20,97 +20,177 @@ prediction <- NULL
 predictor <- NULL
 
 .onLoad <- function(libname, pkgname){
-  numpy <<- reticulate::import("numpy", delay_load = TRUE)
-  joblib <<- reticulate::import("joblib", delay_load = TRUE)
-  torch <<- reticulate::import(module = "torch", delay_load = TRUE)
-  pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
-  sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
-  anndata <<- reticulate::import("anndata", delay_load = TRUE)
-  scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
-  os <<- reticulate::import("os", delay_load = TRUE)
-  warnings <<- reticulate::import("warnings", delay_load = TRUE)
-  scipy <<- reticulate::import("scipy", delay_load = TRUE)
-  typing <<- reticulate::import("typing", delay_load = TRUE)
 
 
-  # load package specific python modules
-  module_path <-  base::system.file("python",package = utils::packageName())
-  preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
-  evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
-  prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
-  predictor <<- reticulate::import_from_path("predictor",module_path,delay_load = TRUE)
+  ## python environment setup scaffold from github TomKellyGenetics/leiden
+  if(!reticulate::py_available()){
+    tryCatch({
+      is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
+      # create conda env if no base image found
+      if(!(is.reticulate.env)){
+        if(interactive()){
+          install.deps <- readline("create conda environment (yes/no)?")
+          packageStartupMessage(install.deps)
+        } else {
+          packageStartupMessage("create conda environment (yes/no)?")
+          install.deps <- "no (use interactive mode)"
+          packageStartupMessage("no (use interactive mode)")
+        }
+        if(install.deps == "yes" || install.deps == "y"){
+          reticulate::miniconda_update()
+          reticulate::conda_create(envname = "r-reticulate")
+          reticulate::conda_install(envname = "r-reticulate", packages = "conda")
+        }
+      }
+      # use "r-reticulate" or "base" image (which ever is used by reticulate if installed already)
+      reticulate.env <- reticulate::conda_list()$name[grep("r-reticulate", reticulate::conda_list()$python)][1]
+      packageStartupMessage(paste(c("using environment:",  reticulate.env), collapse = " "))
+      suppressWarnings(suppressMessages(reticulate::use_python(reticulate::conda_python())))
+      suppressWarnings(suppressMessages(reticulate::use_condaenv(reticulate.env)))
+    }, error = function(e){
+      packageStartupMessage("Unable to set up conda environment r-reticulate")
+      packageStartupMessage("run in terminal:")
+      packageStartupMessage("conda init")
+      packageStartupMessage("conda create -n r-reticulate")
+    },
+    finally = packageStartupMessage("conda environment r-reticulate installed"))
+  }
 
-  suppressWarnings(
-    tryCatch({ #forces to initialize python environment! first loaded module creates error!
-      reticulate::py_module_available("numpy")
-    })
-  )
+
+
+  tryCatch({
+    is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
+    if(reticulate::py_available() || is.reticulate.env ){
+
+      ## test if any python dependency is not available
+      if(!all(
+        reticulate::py_module_available("numpy"),
+        reticulate::py_module_available("joblib"),
+        reticulate::py_module_available("pytorch_lightning"),
+        reticulate::py_module_available("torch"),
+        reticulate::py_module_available("sklearn"),
+        reticulate::py_module_available("anndata"),
+        reticulate::py_module_available("scanpy"),
+        reticulate::py_module_available("os"),
+        reticulate::py_module_available("warnings"),
+        reticulate::py_module_available("scipy"),
+        reticulate::py_module_available("typing")
+      )){
+
+
+        if(interactive()){
+          install.deps <- readline("install dependencies (yes/no)?")
+          packageStartupMessage(install.deps)
+        } else {
+          packageStartupMessage("install dependencies (yes/no)?")
+          install.deps <- "no (use interactive mode)"
+          packageStartupMessage("no (use interactive mode)")
+        }
+        if(install.deps == "yes" || install.deps == "y"){
+          reticulate.env <- reticulate::conda_list()$name[grep("r-reticulate", reticulate::conda_list()$python)][1]
+          packageStartupMessage(paste(c("using environment:",  reticulate.env), collapse = " "))
+          install_python_modules <- function(method = "auto", conda = "auto") {
+            if(!is.null(reticulate::conda_binary())){
+              reticulate::use_python(reticulate::conda_python())
+              if(!(is.reticulate.env)){
+                reticulate::conda_create(envname = reticulate.env)
+                if(!reticulate::py_module_available("conda")) reticulate::conda_install(envname = reticulate.env, packages = "conda")
+              }
+              suppressWarnings(suppressMessages(reticulate::use_condaenv(reticulate.env)))
+              if(.Platform$OS.type == "windows"){
+                utils::install.packages("devtools",  quiet = TRUE)
+                devtools::install_github("rstudio/reticulate", ref = "86ebb56",  quiet = TRUE)
+                if(!reticulate::py_module_available("numpy")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "numpy")))
+                if(!reticulate::py_module_available("joblib")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "joblib")))
+                if(!reticulate::py_module_available("pytorch_lightning")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "pytorch-lightning")))
+                if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "pytorch-lightning")))
+                if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "scikit-learn")))
+                if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "anndatag")))
+                if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "scanpy")))
+                if(!reticulate::py_module_available("os")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "os")))
+                if(!reticulate::py_module_available("warnings")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "warnings")))
+                if(!reticulate::py_module_available("scipy")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "scipy")))
+                if(!reticulate::py_module_available("typing")) suppressWarnings(suppressMessages(reticulate::conda_install(envname = reticulate.env, packages = "typing")))
+                utils::install.packages("reticulate",  quiet = TRUE)
+              } else {
+                if(!reticulate::py_module_available("numpy")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "numpy")))
+                if(!reticulate::py_module_available("joblib")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "joblib")))
+                if(!reticulate::py_module_available("pytorch_lightning")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "pytorch-lightning")))
+                if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "pytorch-lightning")))
+                if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "scikit-learn")))
+                if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "anndata")))
+                if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "scanpy")))
+                if(!reticulate::py_module_available("os")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "os")))
+                if(!reticulate::py_module_available("warnings")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "warnings")))
+                if(!reticulate::py_module_available("scipy")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "scipy")))
+                if(!reticulate::py_module_available("typing")) suppressWarnings(suppressMessages(reticulate::conda_install(reticulate.env, "typing")))
+                Sys.setenv(RETICULATE_PYTHON = reticulate::conda_python())
+              }
+            } else {
+
+              if(!reticulate::py_module_available("numpy")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "numpy")))
+              if(!reticulate::py_module_available("joblib")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "joblib")))
+              if(!reticulate::py_module_available("pytorch_lightning")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "pytorch-lightning")))
+              if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "pytorch-lightning")))
+              if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "scikit-learn")))
+              if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "anndata")))
+              if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "scanpy")))
+              if(!reticulate::py_module_available("os")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "os")))
+              if(!reticulate::py_module_available("warnings")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "warnings")))
+              if(!reticulate::py_module_available("scipy")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "scipy")))
+              if(!reticulate::py_module_available("typing")) suppressWarnings(suppressMessages(reticulate::py_install(reticulate.env, "typing")))
+              Sys.setenv(RETICULATE_PYTHON = reticulate::py_config()$python)
+            }
+          }
+        }
+        quiet <- function(expr, all = TRUE) {
+          if (Sys.info()['sysname'] == "Windows") {
+            file <- "NUL"
+          } else {
+            file <- "/dev/null"
+          }
+
+          if (all) {
+            suppressWarnings(suppressMessages(suppressPackageStartupMessages(
+              capture.output(expr, file = file)
+            )))
+          } else {
+            capture.output(expr, file = file)
+          }
+        }
+        install_python_modules()
+      }
+    }
+  }, error = function(e){
+    packageStartupMessage("Unable to install python modules")
+    packageStartupMessage("run in terminal:")
+    packageStartupMessage("conda install -n r-reticulate -c conda-forge <pkg_name>")
+  },
+  finally = packageStartupMessage("all python modules installed"))
+
+
+
+
+numpy <<- reticulate::import("numpy", delay_load = TRUE)
+joblib <<- reticulate::import("joblib", delay_load = TRUE)
+torch <<- reticulate::import(module = "torch", delay_load = TRUE)
+pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
+sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
+anndata <<- reticulate::import("anndata", delay_load = TRUE)
+scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
+os <<- reticulate::import("os", delay_load = TRUE)
+warnings <<- reticulate::import("warnings", delay_load = TRUE)
+scipy <<- reticulate::import("scipy", delay_load = TRUE)
+typing <<- reticulate::import("typing", delay_load = TRUE)
+
+
+# load package specific python modules
+module_path <-  base::system.file("python",package = utils::packageName())
+if(module_path == ""){module_path <-  base::system.file("inst/python",package = utils::packageName())}
+preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
+evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
+prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
 }
-
-
-# preprocessing <- reticulate::import_from_path("preprocessing",file.path("inst", "python"))
-# prediction <- reticulate::import_from_path("prediction",file.path("inst", "python"))
-# evaluate <- reticulate::import_from_path("evaluate",file.path("inst", "python"))
-#
-# for (obj in names(preprocessing)) {assign(obj, NULL)}
-# for (obj in names(prediction)) {assign(obj, NULL)}
-# for (obj in names(evaluate)) {assign(obj, NULL)}
-#
-#
-# .onLoad <- function(libname, pkgname) {
-#   preprocessing <- reticulate::import_from_path("preprocessing",
-#                 system.file("python", package = packageName()),delay_load = TRUE)
-#   prediction <- reticulate::import_from_path("prediction",
-#                 system.file("python", package = packageName()),delay_load = TRUE)
-#   evaluate <- reticulate::import_from_path("evaluate",
-#                 system.file("python", package = packageName()),delay_load = TRUE)
-#
-#
-#
-#   for (obj in names(preprocessing)){assignInMyNamespace(obj, preprocessing[[obj]])}
-#   for (obj in names(prediction)){assignInMyNamespace(obj, prediction[[obj]])}
-#   for (obj in names(evaluate)){assignInMyNamespace(obj, evaluate[[obj]])}
-#
-#
-#
-# }
-
-
-
-# numpy <- NULL
-# scanpy <- NULL
-# joblib <- NULL
-# evaluate <- NULL
-# prediction <- NULL
-# preprocessing <- NULL
-# torch <- NULL
-# pytorch_lightning <- NULL
-# sklearn <- NULL
-# anndata <- NULL
-#
-# .onLoad <- function(libname, pkgname){
-#     #reticulate::configure_environment(pkgname)
-#     module_path <-  base::system.file("python",package = "scLinear")
-#
-#     #tryCatch({
-#       numpy <<- reticulate::import("numpy", delay_load = TRUE)
-#       joblib <<- reticulate::import("joblib", delay_load = TRUE)
-#       torch <<- reticulate::import(module = "torch", delay_load = TRUE)
-#       pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
-#       sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
-#       anndata <<- reticulate::import("anndata", delay_load = TRUE)
-#       scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
-#
-#       preprocessing <<- reticulate::import_from_path(module = "preprocessing", path = module_path, delay_load = TRUE)
-#       prediction <<- reticulate::import_from_path(module = "prediction", path = module_path, delay_load = TRUE)
-#       evaluate <<- reticulate::import_from_path(module = "evaluate", path = module_path, delay_load = TRUE)
-#     #}, error = function(e){
-#      # packageStartupMessage("Some python packages could not be loaded. Try install_pyton_dependencies to install missing dependencies!")
-#     #  return(NULL)
-#     #  }
-#    # )
-#
-# }
 
 
 
