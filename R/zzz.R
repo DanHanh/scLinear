@@ -187,8 +187,6 @@ predictor <- NULL
   finally = packageStartupMessage("all python modules installed"))
 
 
-if(FALSE){
-
 if(reticulate::py_module_available("numpy")){numpy <<- reticulate::import("numpy", delay_load = TRUE)}
 if(reticulate::py_module_available("joblib")){joblib <<- reticulate::import("joblib", delay_load = TRUE)}
 if(reticulate::py_module_available("torch")){torch <<- reticulate::import("torch", delay_load = TRUE)}
@@ -208,7 +206,7 @@ if(reticulate::py_module_available("typing")){typing <<- reticulate::import("typ
 module_path <-  base::system.file("python",package = utils::packageName())
 if(module_path == ""){module_path <-  base::system.file("inst/python",package = utils::packageName())}
 
-if(!all(
+if(all(
   reticulate::py_module_available("numpy"),
   reticulate::py_module_available("sklearn"),
   reticulate::py_module_available("anndata"),
@@ -217,12 +215,12 @@ if(!all(
   reticulate::py_module_available("typing")
 )){preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)}
 
-if(!all(
+if(all(
   reticulate::py_module_available("sklearn"),
   reticulate::py_module_available("scipy")
 )){evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)}
 
-if(!all(
+if(all(
   reticulate::py_module_available("numpy"),
   reticulate::py_module_available("joblib"),
   reticulate::py_module_available("pytorch_lightning"),
@@ -235,6 +233,4 @@ if(!all(
    reticulate::py_module_available("typing")
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
-
-}
 }
