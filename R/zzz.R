@@ -28,6 +28,7 @@ predictor <- NULL
 #' @return NULL
 .onLoad <- function(libname, pkgname){
 
+  if(FALSE){
 
   ## python environment setup scaffold from github TomKellyGenetics/leiden
   if(!reticulate::py_available()){
@@ -267,5 +268,5 @@ install_pyton_dependencies <- function(){
   }else{
     print("All python dependencies are already available!")
     }
-
+}
 }
