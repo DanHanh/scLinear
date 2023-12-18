@@ -24,6 +24,17 @@ predictor <- NULL
 
   ## python environment setup scaffold from github TomKellyGenetics/leiden
   if(!reticulate::py_available()){
+    ## Try to install miniconda if conda is not availavle
+    tryCatch({reticulate::conda_list()},
+             error = function(e){
+               packageStartupMessage(e)
+               packageStartupMessage("Conda is not available")
+               install.conda <- readline("install miniconda (yes/no)?")
+               if(install.conda){
+                 reticulate::install_miniconda()
+                 reticulate::conda_update()}
+             }
+    )
     tryCatch({
       is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
       # create conda env if no base image found
