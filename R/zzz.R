@@ -28,7 +28,7 @@ predictor <- NULL
 #' @return NULL
 .onLoad <- function(libname, pkgname){
 
-  if(FALSE){
+
 
   ## python environment setup scaffold from github TomKellyGenetics/leiden
   if(!reticulate::py_available()){
@@ -75,7 +75,8 @@ predictor <- NULL
     finally = packageStartupMessage("conda environment r-reticulate installed"))
   }
 
-}
+if(FALSE){
+
 
   tryCatch({
     is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
@@ -234,6 +235,6 @@ if(!all(
    reticulate::py_module_available("typing")
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
-
+}
 
 }
