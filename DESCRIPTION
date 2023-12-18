@@ -32,4 +32,3 @@ Imports:
     utils,
     dplyr,
     scuttle
-  )
