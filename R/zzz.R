@@ -75,9 +75,9 @@ predictor <- NULL
     finally = packageStartupMessage("conda environment r-reticulate installed"))
   }
 
+reticulate::py_module_available("numpy")
+
 if(FALSE){
-
-
   tryCatch({
     is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
     if(reticulate::py_available() || is.reticulate.env ){
