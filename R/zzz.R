@@ -181,26 +181,51 @@ predictor <- NULL
 
 
 
+if(!reticulate::py_module_available("numpy")){numpy <<- reticulate::import("numpy", delay_load = TRUE)}
+if(!reticulate::py_module_available("joblib")){joblib <<- reticulate::import("joblib", delay_load = TRUE)}
+if(!reticulate::py_module_available("torch")){torch <<- reticulate::import("torch", delay_load = TRUE)}
+if(!reticulate::py_module_available("pytorch_lightning")){pytorch_lightning <<- reticulate::import("pytorch_lightning", delay_load = TRUE)}
+if(!reticulate::py_module_available("sklearn")){sklearn <<- reticulate::import("sklearn", delay_load = TRUE)}
+if(!reticulate::py_module_available("anndata")){anndata <<- reticulate::import("anndata", delay_load = TRUE)}
+if(!reticulate::py_module_available("scanpy")){scanpy <<- reticulate::import("scanpy", delay_load = TRUE)}
+if(!reticulate::py_module_available("os")){os <<- reticulate::import("os", delay_load = TRUE)}
+if(!reticulate::py_module_available("warnings")){warnings <<- reticulate::import("warnings", delay_load = TRUE)}
+if(!reticulate::py_module_available("scipy")){scipy <<- reticulate::import("scipy", delay_load = TRUE)}
+if(!reticulate::py_module_available("typing")){typing <<- reticulate::import("typing", delay_load = TRUE)}
 
-numpy <<- reticulate::import("numpy", delay_load = TRUE)
-joblib <<- reticulate::import("joblib", delay_load = TRUE)
-torch <<- reticulate::import(module = "torch", delay_load = TRUE)
-pytorch_lightning <<- reticulate::import(module = "pytorch_lightning", delay_load = TRUE)
-sklearn <<- reticulate::import(module = "sklearn", delay_load = TRUE)
-anndata <<- reticulate::import("anndata", delay_load = TRUE)
-scanpy <<- reticulate::import("scanpy", delay_load = TRUE)
-os <<- reticulate::import("os", delay_load = TRUE)
-warnings <<- reticulate::import("warnings", delay_load = TRUE)
-scipy <<- reticulate::import("scipy", delay_load = TRUE)
-typing <<- reticulate::import("typing", delay_load = TRUE)
 
 
 # load package specific python modules
 module_path <-  base::system.file("python",package = utils::packageName())
 if(module_path == ""){module_path <-  base::system.file("inst/python",package = utils::packageName())}
-preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)
-evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)
-prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)
+
+if(!all(
+  reticulate::py_module_available("numpy"),
+  reticulate::py_module_available("sklearn"),
+  reticulate::py_module_available("anndata"),
+  reticulate::py_module_available("scanpy"),
+  reticulate::py_module_available("warnings"),
+  reticulate::py_module_available("typing")
+)){preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)}
+
+if(!all(
+  reticulate::py_module_available("sklearn"),
+  reticulate::py_module_available("scipy"),
+)){evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)}
+
+if(!all(
+  reticulate::py_module_available("numpy"),
+  reticulate::py_module_available("joblib"),
+  reticulate::py_module_available("pytorch_lightning"),
+  reticulate::py_module_available("torch"),
+  reticulate::py_module_available("sklearn"),
+  reticulate::py_module_available("anndata"),
+  reticulate::py_module_available("os"),
+  reticulate::py_module_available("warnings"),
+  reticulate::py_module_available("scipy"),
+  reticulate::py_module_available("typing")
+)){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
+
 }
 
 
