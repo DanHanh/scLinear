@@ -210,7 +210,7 @@ if(!all(
 
 if(!all(
   reticulate::py_module_available("sklearn"),
-  reticulate::py_module_available("scipy"),
+  reticulate::py_module_available("scipy")
 )){evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)}
 
 if(!all(
@@ -254,7 +254,7 @@ install_pyton_dependencies <- function(){
       if(!reticulate::py_module_available("sklearn")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "scikit-learn")))
       if(!reticulate::py_module_available("anndata")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "anndata")))
       if(!reticulate::py_module_available("joblib")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "joblib")))
-      if(!reticulate::py_module_available("torch")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "pytorch-lightning")))
+      if(!reticulate::py_module_available("torch")) suppressWarnings(supprWessMessages(reticulate::conda_install(packages = "pytorch-lightning")))
       if(!reticulate::py_module_available("scanpy")) suppressWarnings(suppressMessages(reticulate::conda_install(packages = "scanpy")))
     }
   }else{
