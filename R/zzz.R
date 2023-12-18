@@ -30,7 +30,7 @@ predictor <- NULL
                packageStartupMessage(e)
                packageStartupMessage("Conda is not available")
                install.conda <- readline("install miniconda (yes/no)?")
-               if(install.conda){
+               if(install.conda == "yes" || install.conda == "y"){
                  reticulate::install_miniconda()
                  reticulate::conda_update()}
              }
