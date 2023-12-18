@@ -74,19 +74,19 @@ predictor <- NULL
     if(reticulate::py_available() || is.reticulate.env ){
 
       ## test if any python dependency is not available
-      # if(!all(
-      #   reticulate::py_module_available("numpy"),
-      #   reticulate::py_module_available("joblib"),
-      #   reticulate::py_module_available("pytorch_lightning"),
-      #   reticulate::py_module_available("torch"),
-      #   reticulate::py_module_available("sklearn"),
-      #   reticulate::py_module_available("anndata"),
-      #   reticulate::py_module_available("scanpy"),
-      #   reticulate::py_module_available("os"),
-      #   reticulate::py_module_available("warnings"),
-      #   reticulate::py_module_available("scipy"),
-      #   reticulate::py_module_available("typing")
-      #)){
+      if(!all(
+        reticulate::py_module_available("numpy"),
+        reticulate::py_module_available("joblib"),
+        reticulate::py_module_available("pytorch_lightning"),
+        reticulate::py_module_available("torch"),
+        reticulate::py_module_available("sklearn"),
+        reticulate::py_module_available("anndata"),
+        reticulate::py_module_available("scanpy"),
+        reticulate::py_module_available("os"),
+        reticulate::py_module_available("warnings"),
+        reticulate::py_module_available("scipy"),
+        reticulate::py_module_available("typing")
+      )){
 
 
         if(interactive()){
@@ -170,7 +170,7 @@ predictor <- NULL
           }
         }
         install_python_modules()
-     # }
+      }
     }
   }, error = function(e){
     packageStartupMessage("Unable to install python modules")
