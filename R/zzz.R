@@ -198,33 +198,33 @@ if(!reticulate::py_module_available("typing")){typing <<- reticulate::import("ty
 # load package specific python modules
 module_path <-  base::system.file("python",package = utils::packageName())
 if(module_path == ""){module_path <-  base::system.file("inst/python",package = utils::packageName())}
-
-if(!all(
-  reticulate::py_module_available("numpy"),
-  reticulate::py_module_available("sklearn"),
-  reticulate::py_module_available("anndata"),
-  reticulate::py_module_available("scanpy"),
-  reticulate::py_module_available("warnings"),
-  reticulate::py_module_available("typing")
-)){preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)}
-
-if(!all(
-  reticulate::py_module_available("sklearn"),
-  reticulate::py_module_available("scipy")
-)){evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)}
-
-if(!all(
-  reticulate::py_module_available("numpy"),
-  reticulate::py_module_available("joblib"),
-  reticulate::py_module_available("pytorch_lightning"),
-  reticulate::py_module_available("torch"),
-  reticulate::py_module_available("sklearn"),
-  reticulate::py_module_available("anndata"),
-  reticulate::py_module_available("os"),
-  reticulate::py_module_available("warnings"),
-  reticulate::py_module_available("scipy"),
-  reticulate::py_module_available("typing")
-)){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
+#
+# if(!all(
+#   reticulate::py_module_available("numpy"),
+#   reticulate::py_module_available("sklearn"),
+#   reticulate::py_module_available("anndata"),
+#   reticulate::py_module_available("scanpy"),
+#   reticulate::py_module_available("warnings"),
+#   reticulate::py_module_available("typing")
+# )){preprocessing <<- reticulate::import_from_path("preprocessing",module_path,delay_load = TRUE)}
+#
+# if(!all(
+#   reticulate::py_module_available("sklearn"),
+#   reticulate::py_module_available("scipy")
+# )){evaluate <<- reticulate::import_from_path("evaluate",module_path,delay_load = TRUE)}
+#
+# if(!all(
+#   reticulate::py_module_available("numpy"),
+#   reticulate::py_module_available("joblib"),
+#   reticulate::py_module_available("pytorch_lightning"),
+#   reticulate::py_module_available("torch"),
+#   reticulate::py_module_available("sklearn"),
+#   reticulate::py_module_available("anndata"),
+#   reticulate::py_module_available("os"),
+#   reticulate::py_module_available("warnings"),
+#   reticulate::py_module_available("scipy"),
+#   reticulate::py_module_available("typing")
+# )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
 }
 
