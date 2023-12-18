@@ -75,7 +75,7 @@ predictor <- NULL
     finally = packageStartupMessage("conda environment r-reticulate installed"))
   }
 
-
+}
 
   tryCatch({
     is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
@@ -234,6 +234,6 @@ if(!all(
    reticulate::py_module_available("typing")
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
-}
+
 
 }
