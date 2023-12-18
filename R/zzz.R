@@ -19,6 +19,13 @@ evaluate <- NULL
 prediction <- NULL
 predictor <- NULL
 
+
+#' onLoad function
+#'
+#' @param libname A
+#' @param pkgname A
+#'
+#' @return NULL
 .onLoad <- function(libname, pkgname){
 
 
