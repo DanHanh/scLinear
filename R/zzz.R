@@ -75,9 +75,7 @@ predictor <- NULL
     finally = packageStartupMessage("conda environment r-reticulate installed"))
   }
 
-reticulate::py_module_available("numpy")
 
-if(FALSE){
   tryCatch({
     is.reticulate.env <- any(grepl("r-reticulate", reticulate::conda_list()$python))
     if(reticulate::py_available() || is.reticulate.env ){
@@ -190,17 +188,18 @@ if(FALSE){
 
 
 
-if(!reticulate::py_module_available("numpy")){numpy <<- reticulate::import("numpy", delay_load = TRUE)}
-if(!reticulate::py_module_available("joblib")){joblib <<- reticulate::import("joblib", delay_load = TRUE)}
-if(!reticulate::py_module_available("torch")){torch <<- reticulate::import("torch", delay_load = TRUE)}
-if(!reticulate::py_module_available("pytorch_lightning")){pytorch_lightning <<- reticulate::import("pytorch_lightning", delay_load = TRUE)}
-if(!reticulate::py_module_available("sklearn")){sklearn <<- reticulate::import("sklearn", delay_load = TRUE)}
-if(!reticulate::py_module_available("anndata")){anndata <<- reticulate::import("anndata", delay_load = TRUE)}
-if(!reticulate::py_module_available("scanpy")){scanpy <<- reticulate::import("scanpy", delay_load = TRUE)}
-if(!reticulate::py_module_available("os")){os <<- reticulate::import("os", delay_load = TRUE)}
-if(!reticulate::py_module_available("warnings")){warnings <<- reticulate::import("warnings", delay_load = TRUE)}
-if(!reticulate::py_module_available("scipy")){scipy <<- reticulate::import("scipy", delay_load = TRUE)}
-if(!reticulate::py_module_available("typing")){typing <<- reticulate::import("typing", delay_load = TRUE)}
+if(reticulate::py_module_available("numpy")){numpy <<- reticulate::import("numpy", delay_load = TRUE)}
+if(reticulate::py_module_available("joblib")){joblib <<- reticulate::import("joblib", delay_load = TRUE)}
+if(reticulate::py_module_available("torch")){torch <<- reticulate::import("torch", delay_load = TRUE)}
+if(reticulate::py_module_available("pytorch_lightning")){pytorch_lightning <<- reticulate::import("pytorch_lightning", delay_load = TRUE)}
+if(reticulate::py_module_available("sklearn")){sklearn <<- reticulate::import("sklearn", delay_load = TRUE)}
+if(reticulate::py_module_available("anndata")){anndata <<- reticulate::import("anndata", delay_load = TRUE)}
+if(reticulate::py_module_available("scanpy")){scanpy <<- reticulate::import("scanpy", delay_load = TRUE)}
+if(reticulate::py_module_available("os")){os <<- reticulate::import("os", delay_load = TRUE)}
+if(reticulate::py_module_available("warnings")){warnings <<- reticulate::import("warnings", delay_load = TRUE)}
+if(reticulate::py_module_available("scipy")){scipy <<- reticulate::import("scipy", delay_load = TRUE)}
+if(reticulate::py_module_available("typing")){typing <<- reticulate::import("typing", delay_load = TRUE)}
+
 
 
 
@@ -235,6 +234,6 @@ if(!all(
    reticulate::py_module_available("typing")
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
-}
+
 
 }
