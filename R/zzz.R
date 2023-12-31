@@ -206,7 +206,6 @@ if(reticulate::py_module_available("typing")){typing <<- reticulate::import("typ
 module_path <-  base::system.file("python",package = utils::packageName())
 if(module_path == ""){module_path <-  base::system.file("inst/python",package = utils::packageName())}
 
-<<<<<<< HEAD
 if(all(
   reticulate::py_module_available("numpy"),
   reticulate::py_module_available("sklearn"),
@@ -235,5 +234,3 @@ if(all(
  )){prediction <<- reticulate::import_from_path("prediction",module_path,delay_load = TRUE)}
 
 }
-=======
->>>>>>> main
