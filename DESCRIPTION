@@ -33,3 +33,4 @@ Imports:
     dplyr,
     scuttle
 LinkingTo: Rcpp (>=0.11.0)
+Encoding: UTF-8
