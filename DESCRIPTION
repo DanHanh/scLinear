@@ -1,5 +1,5 @@
 Package: scLinear
-Title: Prediction of ADT from gene expression in scRNA-seq data.
+Title: Prediction of protein abundance from gene expression in scRNA-seq data.
 Version: 0.0.0.9000
 Authors@R:
     person("Daniel", "Hanhart", , "first.last@example.com", role = c("aut", "cre"),
@@ -34,4 +34,3 @@ Imports:
     scuttle
 LinkingTo: Rcpp
 SystemRequirenebts: C++11
-Encoding: UTF-8
