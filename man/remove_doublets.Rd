@@ -10,7 +10,7 @@ remove_doublets(
   remove_cells = TRUE,
   seed = 42,
   print_plots = TRUE,
-  WW...
+  ...
 )
 }
 \arguments{
