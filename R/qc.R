@@ -142,7 +142,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3,
 
 remove_doublets <- function(object = object, samples = NULL,
                             remove_cells = TRUE ,seed = 42, print_plots = TRUE,
-                            WW...){
+                            ...){
   set.seed(seed = seed)
 
   #### remove doublets with scDblFinder
