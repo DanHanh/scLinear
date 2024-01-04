@@ -32,3 +32,4 @@ Imports:
     utils,
     dplyr,
     scuttle
+LinkingTo: Rcpp (>=0.11.0)
