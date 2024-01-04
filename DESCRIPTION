@@ -32,5 +32,6 @@ Imports:
     utils,
     dplyr,
     scuttle
-LinkingTo: Rcpp (>= 0.11.0)
+LinkingTo: Rcpp
+SystemRequirenebts: C++11
 Encoding: UTF-8
