@@ -21,7 +21,10 @@
 #' sobj <- mad_filtering(sobj)
 #' }
 
-mad_filtering <- function(object = objec, samples = NULL, nmads = 3, type = "both", mttype = "higher", remove_cells = TRUE, print_plots = TRUE, seed = 42, min.features = NULL, ...){
+mad_filtering <- function(object = objec, samples = NULL, nmads = 3,
+                          type = "both", mttype = "higher", remove_cells = TRUE,
+                          print_plots = TRUE, seed = 42, min.features = NULL,
+                          ...){
   set.seed(seed)
   ##
   if(is.null(samples)){
@@ -133,7 +136,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = "", fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
+      ggplot2::geom_text(stat = "count", vjust = 1.2) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     if(print_plots){base::print(p)}
 
@@ -143,7 +146,7 @@ remove_doublets <- function(object = object, samples = NULL, remove_cells = TRUE
 
     p <- ggplot2::ggplot(metadata, ggplot2::aes(x = scDblFinder.sample, fill = scDblFinder.class, label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
       ggplot2::geom_bar(position = "identity", stat = "count") + ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-      ggplot2::geom_text(stat = "count", vjust = -1) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
+      ggplot2::geom_text(stat = "count", vjust = 1.2) + ggplot2::labs(title = "Number of doublets by sample", fill = "Type") +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = -0.5, hjust = 1)) + ggplot2::xlab("Sample") + ggplot2::ylab("# cells")
     if(print_plots){base::print(p)}
 }

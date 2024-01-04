@@ -17,7 +17,6 @@ typing <- NULL
 preprocessing <- NULL
 evaluate <- NULL
 prediction <- NULL
-predictor <- NULL
 
 
 #' onLoad function
