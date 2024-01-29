@@ -18,7 +18,6 @@ preprocessing <- NULL
 evaluate <- NULL
 prediction <- NULL
 
-
 #' onLoad function
 #'
 #' @param libname A
@@ -71,7 +70,7 @@ prediction <- NULL
       packageStartupMessage("conda init")
       packageStartupMessage("conda create -n r-reticulate")
     },
-    finally = packageStartupMessage("conda environment r-reticulate installed"))
+    finally = packageStartupMessage("conda environment r-reticulate"))
   }
 
 

@@ -83,7 +83,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3,
             label = ggplot2::after_stat(count))) + ggplot2::theme_bw() +
           ggplot2::geom_bar(position = "identity", stat = "count") +
           ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-          ggplot2::geom_text(stat = "count", vjust = -0.5) +
+          ggplot2::geom_text(stat = "count", vjust = 1.2) +
           ggplot2::labs(title = "Number of filtered cells by sample",
             fill = "Filtered") +
           ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,
@@ -101,7 +101,7 @@ mad_filtering <- function(object = objec, samples = NULL, nmads = 3,
         ggplot2::theme_bw() +
         ggplot2::geom_bar(position = "identity", stat = "count") +
         ggplot2::scale_fill_manual(values = pals::kelly()[3:4]) +
-        ggplot2::geom_text(stat = "count", vjust = -0.5) +
+        ggplot2::geom_text(stat = "count", vjust = 1.2) +
         ggplot2::labs(title = "Number of quality filtered cells by sample",
           fill = "Filtered") +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,
