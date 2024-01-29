@@ -108,7 +108,7 @@ pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> Running Louvain algorithm...
 #> Maximum modularity in 10 random starts: 0.8804
 #> Number of communities: 14
-#> Elapsed time: 0 seconds
+#> Elapsed time: 1 seconds
 #> [1] "Start cell type annotation"
 #> Pre-defined cell type database panglaodb will be used.
 #> Multi Resolution Annotation Started. 
@@ -232,13 +232,13 @@ eval_res <- evaluate_predictor(pipe = pipe,
                   adt_test = pbmc10k_test@assays[["ADT"]],
                   normalize_gex = TRUE,
                   normalize_adt = TRUE)
-#> RMSE: 0.34669075026472773
-#> Pearson correlation: 0.9437827146666772
-#> Spearman correlation: 0.8751217776970737
+#> RMSE: 0.34656669459487954
+#> Pearson correlation: 0.9438268410234197
+#> Spearman correlation: 0.8743212975184478
 
 print(eval_res)
 #>        RMSE   Pearson  Spearman
-#> 1 0.3466908 0.9437827 0.8751218
+#> 1 0.3465667 0.9438268 0.8743213
 
 ## add the predicted adt assay
 pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
