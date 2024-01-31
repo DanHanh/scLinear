@@ -1,6 +1,6 @@
 Package: scLinear
 Title: Prediction of protein abundance from gene expression in scRNA-seq data.
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R:
     person("Daniel", "Hanhart", , "daniel.hanhart@unibe.ch", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
