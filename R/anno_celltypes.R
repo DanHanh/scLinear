@@ -131,8 +131,10 @@ integrate_samples <- function(object, method = "rpca", samples = "samples", seed
 
   # ## run default processing steps also with rna assay if later used
   Seurat::DefaultAssay(object_integrated) <- "RNA"
-  object_integrated <- object_integrated %>% SeuratObject::JoinLayers() %>%
-                        Seurat::NormalizeData() %>%
+  if(utils::packageVersion("SeuratObject") >= "5.0.0"){
+    object_integrated <- object_integrated %>% SeuratObject::JoinLayers()
+  }
+  object_integrated <- object_integrated %>% Seurat::NormalizeData() %>%
                         Seurat::FindVariableFeatures() %>% Seurat::ScaleData()
 
   Seurat::DefaultAssay(object_integrated) <- "integrated"
