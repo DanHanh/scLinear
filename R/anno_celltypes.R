@@ -131,7 +131,8 @@ integrate_samples <- function(object, method = "rpca", samples = "samples", seed
 
   # ## run default processing steps also with rna assay if later used
   Seurat::DefaultAssay(object_integrated) <- "RNA"
-  object_integrated <- object_integrated %>% Seurat::NormalizeData() %>%
+  object_integrated <- object_integrated %>% SeuratObject::JoinLayers() %>%
+                        Seurat::NormalizeData() %>%
                         Seurat::FindVariableFeatures() %>% Seurat::ScaleData()
 
   Seurat::DefaultAssay(object_integrated) <- "integrated"
@@ -168,13 +169,15 @@ cluster_data <- function(object, resolution = 0.8, npcs = NULL, seed = 42){
   }
 
   if(is.null(npcs)){
-    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings,
+                                                            k = 20)[["dim.est"]])
   }else{
     ndims <- npcs
   }
 
   print(paste0("Number of used dimensions for clustering: ",ndims))
-  object <- object %>% Seurat::RunUMAP(dims = 1:ndims) %>% Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca") %>%
+  object <- object %>% Seurat::RunUMAP(dims = 1:ndims) %>%
+              Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca") %>%
               Seurat::FindClusters(resolution = resolution)
 
   return(object)

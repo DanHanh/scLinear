@@ -52,10 +52,6 @@ reticulate::conda_install(envname = "r-reticulate", packages = "conda")
 
 # Activate conda environment for reticulate.
 reticulate::use_miniconda(condaenv = "r-reticulate")
-
-# afterwards the python dependencies can be installed with:
-scLinear::install_pyton_dependencies()
-
 # If problems occure in setting up the conda environment, it can be helpfull to uninstall and reinstall reticulate!
 
 ```

@@ -132,7 +132,7 @@ scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE,
   pipe <- create_adt_predictor()
   pipe <- load_pretrained_model(pipe, model = model)
 
-  object@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+  object@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe,
                                                   gexp = Seurat::GetAssay(object, assay = assay_name),
                                                   normalize = TRUE)
 
