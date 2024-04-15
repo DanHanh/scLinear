@@ -1,11 +1,11 @@
 Package: scLinear
 Title: Prediction of protein abundance from gene expression in scRNA-seq data.
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R:
-    person("Daniel", "Hanhart", , "first.last@example.com", role = c("aut", "cre"),
+    person("Daniel", "Hanhart", , "daniel.hanhart@unibe.ch", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: MIT + file LICENSE
+License: CC BY 4.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
