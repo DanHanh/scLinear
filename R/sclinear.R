@@ -132,7 +132,7 @@ scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE,
   pipe <- create_adt_predictor()
   pipe <- load_pretrained_model(pipe, model = model)
 
-  object@assays[["predicted_ADT"]] <-  adt_predict(pipe = pipe,
+  object[["predicted_ADT"]] <-  adt_predict(pipe = pipe,
                                                   gexp = Seurat::GetAssay(object, assay = assay_name),
                                                   normalize = TRUE)
 
@@ -181,8 +181,12 @@ fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
   if(class(gexp_train)[1] == "Assay"){ gexp_train <- Seurat::GetAssayData(gexp_train, slot = slot_gex) }
   if(class(adt_train)[1] == "Assay"){ adt_train <- Seurat::GetAssayData(adt_train, slot = slot_adt) }
 
+  if(class(gexp_train)[1] == "Assay5"){ gexp_train <- Seurat::GetAssayData(gexp_train, slot = slot_gex) }
+  if(class(adt_train)[1] == "Assay5"){ adt_train <- Seurat::GetAssayData(adt_train, slot = slot_adt) }
+
   if(!is.null(gexp_test)){
     if(class(gexp_test)[1] == "Assay"){ gexp_test <- Seurat::GetAssayData(gexp_test, slot = slot_gex) }
+    if(class(gexp_test)[1] == "Assay5"){ gexp_test <- Seurat::GetAssayData(gexp_test, slot = slot_gex) }
   }
 
 

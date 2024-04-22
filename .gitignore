@@ -5,3 +5,4 @@
 .DS_Store
 local
 test_script.R
+inst/python/__pycache__

@@ -36,23 +36,52 @@ gene expression data in scRNA-seq data. It includes all the necessary pre-proces
 ## Installation
 
 You can install the development version of scLinear using devtools.
+Because of multiple issues with python dependencies not correctly installed during package installation, I removed the automated installation, of the dependencies for now and added them to the installation guide (I will try to solve the issue in the future)
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("DanHanh/scLinear")
+# Set up a python environment. I will use the renv package to create a new local environment. In case you want to use your default environment and r library, the first two commands can be scipped.
+renv::init("./")
+renv::use_python()
 
-# Create a conda environment for the python dependencies.
+# Get sure that the correct python environment is used by reticulate
+reticulate::py_config()
 
-# install miniconda
-reticulate::install_miniconda()
-reticulate::conda_update()
-# create r-reticulate conda environment.
-reticulate::conda_create("r-reticulate")
-reticulate::conda_install(envname = "r-reticulate", packages = "conda")
+#> python:         /path/to/renv/python/virtualenvs/renv-python-3.10/bin/python
+#> libpython:      /usr/lib/python3.10/config-3.10-x86_64-linux-gnu/libpython3.10.so
+#> pythonhome:     /path/to/renv/python/virtualenvs/renv-python-3.10:/path/to/renv/python/virtualenvs/renv-python-3.10
+#> version:        3.10.12 (main, Nov 20 2023, 15:14:05) [GCC 11.4.0]
+#> numpy:           [NOT FOUND]
+#> 
+#> NOTE: Python version was forced by RETICULATE_PYTHON
 
-# Activate conda environment for reticulate.
-reticulate::use_miniconda(condaenv = "r-reticulate")
-# If problems occure in setting up the conda environment, it can be helpfull to uninstall and reinstall reticulate!
+
+# Install all python dependencies
+py_modules_list <- c("numpy","joblib","scikit-learn","anndata","warnings","scanpy")
+for (m in py_modules_list){
+  if(!reticulate::py_module_available(m)){reticulate::py_install(m)}
+}
+reticulate::py_install("pytorch_lightning", pip = TRUE)
+
+# Test if all python dependencies are available
+py_modules_list_available <- c("numpy","joblib","sklearn","anndata","warnings","torch","scanpy","os","scipy","typing", "pytorch_lightning")
+py_modules_list_not_available <- c()
+for (m in py_modules_list_available){
+  if(!reticulate::py_module_available(m)){py_modules_list_not_available <- c(py_modules_list_not_available,m)}
+}
+if(is.null(py_modules_list_not_available)){ "All python modules are available"}else{
+  print(paste0("The following python modules are not available: ", paste0(py_modules_list_not_available, collapse = ", ")))
+  print("Try installing them with: reticulate::py_install(missing module name)")
+}
+
+#> [1] "All python modules are available"
+
+# if the installation of scLinear fails, try restarting the R session, to reload the reticulate environment
+
+# Install scLinear
+
+if (!require("devtools", quietly = TRUE)){install.packages("devtools")}
+
+devtools::install_github("DanHanh/scLinear", ref = "dev")
 
 ```
 
@@ -187,7 +216,9 @@ pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
 
 
 ## Citation
-Daniel Hanhart et al., "scLinear; against the deep current to predict protein abundance at single-cell resolution"
+Daniel Hanhart et al., "ScLinear predicts protein abundance at single-cell resolution"
+
+DOI: https://doi.org/10.1038/s42003-024-05958-4
 
 ## Contact us
 For any request or question you may contact:
