@@ -43,7 +43,6 @@ Because of multiple issues with python dependencies not correctly installed duri
 renv::init("./")
 renv::use_python()
 
-install.packages("devtools")
 install.packages("reticulate")
 
 # Get sure that the correct python environment is used by reticulate
