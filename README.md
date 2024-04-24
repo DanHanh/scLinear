@@ -32,6 +32,9 @@ installation guide (I will try to solve the issue in the future)
 renv::init("./")
 renv::use_python()
 
+install.packages("devtools")
+install.packages("reticulate")
+
 # Get sure that the correct python environment is used by reticulate
 reticulate::py_config()
 
@@ -44,12 +47,13 @@ reticulate::py_config()
 #> NOTE: Python version was forced by RETICULATE_PYTHON
 
 
-# Install all python dependencies
-py_modules_list <- c("numpy","joblib","scikit-learn","anndata","warnings","scanpy")
+# Install all python dependencies (The version specified for scikit-learn & numpy should be yoused, if you want to use the pretrained models)
+py_modules_list <- c("numpy<1.26.0","joblib","scikit-learn==1.2.0","anndata","warnings","scanpy")
 for (m in py_modules_list){
   if(!reticulate::py_module_available(m)){reticulate::py_install(m)}
 }
-reticulate::py_install("pytorch_lightning", pip = TRUE)
+if(!reticulate::py_module_available("pytorch_lightning")){reticulate::py_install("pytorch_lightning", pip = TRUE)} # install with pip
+
 
 # Test if all python dependencies are available
 py_modules_list_available <- c("numpy","joblib","sklearn","anndata","warnings","torch","scanpy","os","scipy","typing", "pytorch_lightning")
@@ -85,13 +89,22 @@ set.seed(42)
 
 # File: "Feature / cell matrix (filtered)"
 
-pbmc10k.data <- Seurat::Read10X(data.dir = "./../local/pbmc_10k_protein_v3_filtered_feature_bc_matrix/filtered_feature_bc_matrix")
+# Download the cell matrix file into the local directory and untar it
+dir.create("local", showWarnings = FALSE)
+url <- "https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_10k_protein_v3/pbmc_10k_protein_v3_filtered_feature_bc_matrix.tar.gz"
+destfile <-"local/pbmc_10k_protein_v3_filtered_feature_bc_matrix.tar.gz"   
+download.file(url, destfile)
+untar(destfile, exdir = "local")
+
+# Create a Seurat object from the data
+data_dir <- "local/filtered_feature_bc_matrix"
+pbmc10k.data <- Seurat::Read10X(data.dir = data_dir)
 rownames(x = pbmc10k.data[["Antibody Capture"]]) <- gsub(pattern = "_[control_]*TotalSeqB", replacement = "", x = rownames(x = pbmc10k.data[["Antibody Capture"]]))
 pbmc10k <- Seurat::CreateSeuratObject(counts = pbmc10k.data[["Gene Expression"]], min.cells = 1, min.features = 1)
 pbmc10k[["ADT"]] <- Seurat::CreateAssayObject(pbmc10k.data[["Antibody Capture"]][, colnames(x = pbmc10k)])
 Seurat::DefaultAssay(pbmc10k) <- "RNA"
 
-saveRDS(pbmc10k, "./../local/pbmc10k.rds")
+saveRDS(pbmc10k, "./local/pbmc10k.rds")
 ```
 
 ### Running scLinear
@@ -126,21 +139,12 @@ and returns a Seurat object with the added “predicted_ADT” assay
 ## The simplest way to use scLinear is to use the scLinear() function directly
 
 ``` r
-pbmc10k <- readRDS("./../local/pbmc10k.rds")
+pbmc10k <- readRDS("./local/pbmc10k.rds")
 pbmc10k_adt_predicted <- scLinear(pbmc10k)
 #> [1] "Start remove doublets"
 #> [1] "Start low quality cell removal"
 #> [1] "Start clustering data"
 #> [1] "Number of used dimensions for clustering: 25"
-#> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
-#> 
-#> Number of nodes: 6755
-#> Number of edges: 284319
-#> 
-#> Running Louvain algorithm...
-#> Maximum modularity in 10 random starts: 0.8802
-#> Number of communities: 15
-#> Elapsed time: 0 seconds
 #> [1] "Start cell type annotation"
 #> Pre-defined cell type database panglaodb will be used.
 #> Multi Resolution Annotation Started. 
@@ -159,7 +163,7 @@ independently.
 ## Prepare data
 
 ``` r
-pbmc10k <- readRDS("./../local/pbmc10k.rds")
+pbmc10k <- readRDS("./local/pbmc10k.rds")
 pbmc10k <- prepare_data(pbmc10k,
         integrate_data = FALSE,
         annotation_selfCluster = TRUE, 
@@ -175,15 +179,6 @@ pbmc10k <- prepare_data(pbmc10k,
 
     #> [1] "Start clustering data"
     #> [1] "Number of used dimensions for clustering: 25"
-    #> Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
-    #> 
-    #> Number of nodes: 6755
-    #> Number of edges: 284319
-    #> 
-    #> Running Louvain algorithm...
-    #> Maximum modularity in 10 random starts: 0.8802
-    #> Number of communities: 15
-    #> Elapsed time: 0 seconds
     #> [1] "Start cell type annotation"
     #> Pre-defined cell type database panglaodb will be used.
     #> Multi Resolution Annotation Started. 
@@ -196,7 +191,7 @@ pbmc10k <- prepare_data(pbmc10k,
 <img src="man/figures/README-unnamed-chunk-4-4.png" width="100%" />
 
 ``` r
-saveRDS(pbmc10k ,"./../local/pbmc10k_prepared.rds")
+saveRDS(pbmc10k ,"./local/pbmc10k_prepared.rds")
 ```
 
 ### Use a pre-trained model
@@ -212,7 +207,7 @@ Seurat slot to use. “counts” (default) \* `normalize` TRUE (default) or
 FALSE. An example can be found below:
 
 ``` r
-pbmc10k <- readRDS("./../local/pbmc10k_prepared.rds")
+pbmc10k <- readRDS("./local/pbmc10k_prepared.rds")
 
 pipe <- create_adt_predictor()
 pipe <- load_pretrained_model(pipe, model = "all")
@@ -220,7 +215,7 @@ pipe <- load_pretrained_model(pipe, model = "all")
 pbmc10k@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k@assays[["RNA"]],
                         normalize = TRUE)
-saveRDS(pbmc10k ,"./../local/pbmc10k_predicted.rds")
+saveRDS(pbmc10k ,"./local/pbmc10k_predicted.rds")
 ```
 
 ## Train a new model
@@ -241,7 +236,7 @@ Spearman of the training process. An example of this process can be
 found below.
 
 ``` r
-pbmc10k <- readRDS("./../local/pbmc10k_prepared.rds")
+pbmc10k <- readRDS("./local/pbmc10k_prepared.rds")
 ## Create a training and a test set
 set.seed(42)
 indx <- sample(1:length(colnames(pbmc10k)), size = length(colnames(pbmc10k)), replace = FALSE)
@@ -258,22 +253,30 @@ pipe <- fit_predictor(pipe = pipe,
               normalize_gex = TRUE,
               normalize_adt = TRUE)
 
+## save the trained model
+save_trained_model(pipe = pipe, file = "./local/trained_model.joblib")
+#> NULL
+
+# load the trained model
+pipe <- create_adt_predictor()
+pipe <- load_pretrained_model(pipe, file = "./local/trained_model.joblib")
+
 ## evaluate predictor
 eval_res <- evaluate_predictor(pipe = pipe,
                   gexp_test = pbmc10k_test@assays[["RNA"]],
                   adt_test = pbmc10k_test@assays[["ADT"]],
                   normalize_gex = TRUE,
                   normalize_adt = TRUE)
-#> RMSE: 0.3516102086416105
-#> Pearson correlation: 0.9415166121129439
-#> Spearman correlation: 0.8735580686729406
+#> RMSE: 0.35243118253148364
+#> Pearson correlation: 0.9411908520410573
+#> Spearman correlation: 0.8725401159661871
 
 print(eval_res)
 #>        RMSE   Pearson  Spearman
-#> 1 0.3516102 0.9415166 0.8735581
+#> 1 0.3524312 0.9411909 0.8725401
 
 ## add the predicted adt assay
-pbmc10k_test@assays["predicted_ADT"] <-  adt_predict(pipe = pipe,
+pbmc10k_test[["predicted_ADT"]] <-  adt_predict(pipe = pipe,
                         gexp = pbmc10k_test@assays[["RNA"]],
                         normalize = TRUE)
 ```

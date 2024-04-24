@@ -20,7 +20,8 @@ prepare_data(
   return_plots = FALSE,
   print_plots = TRUE,
   species = "Hs",
-  min.features = NULL
+  min.features = NULL,
+  verbose = FALSE
 )
 }
 \arguments{

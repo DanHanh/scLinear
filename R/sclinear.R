@@ -27,7 +27,7 @@
 #' sobj <- scLinear(object = sobj, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, resolution = 0.8)
 #' }
 
-prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE, species = "Hs", min.features = NULL){
+prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE,remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = TRUE, resolution = 0.8, seed = 42, return_plots = FALSE, print_plots = TRUE, species = "Hs", min.features = NULL, verbose = FALSE){
   set.seed(seed)
 
   plot_list <- list()
@@ -51,26 +51,21 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 
   if(remove_doublets){
     print("Start remove doublets")
-    object <- object %>% remove_doublets(samples = samples, print_plots = print_plots, seed = seed)
+    object <- object %>% remove_doublets(samples = samples, print_plots = print_plots, seed = seed, verbose = verbose)
     plot_list[["doublets"]] <- object[[2]]
     object <- object[[1]]
   }
 
   if(low_qc_cell_removal){
     print("Start low quality cell removal")
-    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots, seed = seed, min.features = min.features)
+    object <- object %>% mad_filtering(samples = samples, print_plots = print_plots, seed = seed, min.features = min.features, verbose = verbose)
     plot_list[["low_qc_cells"]] <- object[[2]]
     object <- object[[1]]
   }
 
-
-  # object <- object %>% Seurat::NormalizeData() %>%
-  #   Seurat::FindVariableFeatures() %>%
-  #   Seurat::ScaleData()
-
   if(integrate_data){
     print("Start integrate data")
-    object <- integrate_samples(object, samples = samples, seed = seed)
+    object <- integrate_samples(object, samples = samples, seed = seed, verbose = verbose)
   }
 
   print("Start clustering data")
@@ -110,7 +105,7 @@ prepare_data <- function(object, remove_doublets = TRUE, low_qc_cell_removal = T
 #' \dontrun{
 #' sobj <- scLinear(object = sobj)
 #' }
-scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = FALSE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE, species = "Hs", min.features = NULL){
+scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE, anno_level = 2, samples = NULL, integrate_data = FALSE, remove_empty_droplets = FALSE, lower = 100, FDR = 0.01, annotation_selfCluster = TRUE, resolution = 0.8, seed = 42, return_plots = FALSE, model = "all", assay_name = "RNA", print_plots = FALSE, species = "Hs", min.features = NULL, verbose = FALSE){
   set.seed(seed)
   object <- prepare_data(object,
                          remove_doublets = remove_doublets,
@@ -127,7 +122,8 @@ scLinear <- function(object, remove_doublets = TRUE, low_qc_cell_removal = TRUE,
                          return_plots = FALSE,
                          print_plots = print_plots,
                          species = species,
-                         min.features = min.features)
+                         min.features = min.features,
+                         verbose = verbose)
 
   pipe <- create_adt_predictor()
   pipe <- load_pretrained_model(pipe, model = model)
@@ -190,7 +186,6 @@ fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
   }
 
 
-
   if(normalize_gex){
     gexp_train <- gexp_normalize(gexp_train)
     if( !is.null(gexp_test)){gexp_test <- gexp_normalize(gexp_test)}
@@ -230,14 +225,31 @@ fit_predictor <- function(pipe, gexp_train , adt_train, gexp_test = NULL,
 #' }
 adt_predict <- function(pipe, gexp, slot = "counts", normalize = TRUE){
 
-  gexp_matrix <- Seurat::GetAssayData(gexp, slot = slot)
+  ## Handle gexp based on suplied data type
+  if(any(class(gexp) %in% c("Seurat", "Assay", "Assay5"))){
+    gexp_matrix <- Seurat::GetAssayData(gexp, slot = slot)
+  }else{ # assume it is a matrix type
+    gexp_matrix <- Matrix::Matrix(gexp, sparse = TRUE)
+  }
 
   if(normalize){
     gexp_matrix <- gexp_normalize(gexp_matrix)
   }
-  gexp_matrix <- Matrix::t(gexp_matrix)
 
+  ## test the overlap between the genes the predictor was trained on and the supplied gene expression matrix
+  if(typeof(pipe$gex_names) == "environment"){
+    gex_names_test <- pipe$gex_names$to_list()
+  }else{
+    gex_names_test <- pipe$gex_names
+  }
+  if((sum(gex_names_test %in% rownames(gexp_matrix)) / length(gex_names_test)) < 0.5){
+    warning("Less than 50% of gene names are shared between the trained object and the supplied expression matrix. This can lead to ureliable predictions. To see the named used in the trained prediction object use pipe$gex_names.")
+  }
+
+
+  gexp_matrix <- Matrix::t(gexp_matrix)
   gexp_matrix_py <- reticulate::r_to_py(as.matrix(gexp_matrix))
+
 
   predicted_adt <- pipe$predict(gexp_matrix_py, gex_names = colnames(gexp_matrix))
 
@@ -294,7 +306,11 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 
   ## transpose to fit anndata format
   p_adt_matrix <- Matrix::t(p_adt@data)
-  t_adt_matrix <- Matrix::t(t_adt@data)
+  if(any(class(t_adt) %in% c("Assay", "Assay5"))){
+    t_adt_matrix <- Matrix::t(t_adt@data)
+  }else{
+    t_adt_matrix <- Matrix::t(t_adt)
+  }
 
   ## reorder adt text matrix to the same order as predicted adt
   t_adt_matrix <- t_adt_matrix[,match(colnames(p_adt_matrix), colnames(t_adt_matrix))]
@@ -323,22 +339,47 @@ evaluate_predictor <- function(pipe, gexp_test, adt_test, slot = "counts", norma
 #' \dontrun{
 #' load_pretrained_model(pipe, model = "all")
 #' }
-load_pretrained_model <- function(pipe, model = "all"){
+load_pretrained_model <- function(pipe, model = "all", file = NULL){
 
-  load_path <-  base::system.file("data",package = "scLinear")
+  if(is.null(file)){ # load a pretrained model
+    load_path <-  base::system.file("data",package = "scLinear")
 
-  m <- switch(model,
-           "all" = "ADTPredictor_neuripstrain_alltypes.joblib",
-           "bcell" = "ADTPredictor_neuripstrain_Bcells.joblib",
-           "nkcell" = "ADTPredictor_neuripstrain_NKcells.joblib",
-           "tcell" = "ADTPredictor_neuripstrain_Tcells.joblib")
+    m <- switch(model,
+             "all" = "ADTPredictor_neuripstrain_alltypes.joblib",
+             "bcell" = "ADTPredictor_neuripstrain_Bcells.joblib",
+             "nkcell" = "ADTPredictor_neuripstrain_NKcells.joblib",
+             "tcell" = "ADTPredictor_neuripstrain_Tcells.joblib")
+    pipe$load(paste0(load_path,"/",m))
+  }else{ # load from path
+    pipe$load(file)
+  }
 
-  pipe$load(paste0(load_path,"/",m))
 
   return(pipe)
 
 }
 
+
+
+#' Save a trained model
+#'
+#' @param pipe A ADT predictor object
+#' @param file name to save the model
+#' @return pipe Returns the pipe with a loaded pre-trained model.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' save_trained_model(pipe, file = "trained_pipe.joblib")
+#' }
+save_trained_model <- function(pipe, file=NULL){
+  if(!is.null(file)){
+    pipe$save(file)
+  }else{
+    stop("Please profide a valid filename.")
+  }
+  return(NULL)
+}
 
 
 #' Normalize gene expression matrix with scran and scuttle

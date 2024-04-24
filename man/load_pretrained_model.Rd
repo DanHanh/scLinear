@@ -4,7 +4,7 @@
 \alias{load_pretrained_model}
 \title{Load a pre-trained model}
 \usage{
-load_pretrained_model(pipe, model = "all")
+load_pretrained_model(pipe, model = "all", file = NULL)
 }
 \arguments{
 \item{pipe}{A ADT predictor object}

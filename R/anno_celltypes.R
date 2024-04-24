@@ -1,5 +1,3 @@
-
-
 #' Annotate each cell with the corresponding cell type
 #'
 #' @param object Seurat object
@@ -11,8 +9,7 @@
 #' \dontrun{
 #' sobj <- anno_celltypes(object = sobj, anno_level = 2, species = "Hs")
 #' }
-
-anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species = "Hs", seed = 42, ...){
+anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL, species = "Hs", seed = 42, ...) {
   default_assay <- Seurat::DefaultAssay(object)
   Seurat::DefaultAssay(object) <- "RNA"
 
@@ -20,29 +17,29 @@ anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species 
   base::load(system.file("data", "Human_PanglaoDB.Rdata", package = "scMRMA"))
 
 
-  anno_res <- scMRMA::scMRMA(input = object,
-                    species = species,
-                    db = "panglaodb",
-                    selfClusters = selfClusters,
-                    ...
-                     )
-  if(length(anno_level) == 1){
+  anno_res <- scMRMA::scMRMA(
+    input = object,
+    species = species,
+    db = "panglaodb",
+    selfClusters = selfClusters,
+    ...
+  )
+  if (length(anno_level) == 1) {
     object@meta.data$cell_type <-
-            anno_res$multiR$annotationResult[[paste0("Level",anno_level)]]
-  }else{
-    for(i in anno_level){
+      anno_res$multiR$annotationResult[[paste0("Level", anno_level)]]
+  } else {
+    for (i in anno_level) {
       object@meta.data[[paste0("cell_type_", i)]] <-
-        anno_res$multiR$annotationResult[[paste0("Level",i)]]
+        anno_res$multiR$annotationResult[[paste0("Level", i)]]
     }
     ## additionaly add as cell type (for highest (lowest number) provided level)
     object@meta.data[[paste0("cell_type")]] <-
-      anno_res$multiR$annotationResult[[paste0("Level",min(anno_level))]]
+      anno_res$multiR$annotationResult[[paste0("Level", min(anno_level))]]
   }
 
   Seurat::DefaultAssay(object) <- default_assay
 
   return(object)
-
 }
 
 
@@ -60,16 +57,12 @@ anno_celltypes <- function(object, anno_level = 2, selfClusters = NULL ,species 
 #' \dontrun{
 #' p <- visualize_data(sobj, group.by = "cell_type", ndims = 30)
 #' }
-
-visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
-
-
-
-  object <- object %>% Seurat::RunPCA(npcs = max(ndims, 100) )
+visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...) {
+  object <- object %>% Seurat::RunPCA(npcs = max(ndims, 100))
 
   ## estimate dimensionality of data if no ndims is supplied
-  if(is.null(ndims)){
-  ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
+  if (is.null(ndims)) {
+    ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings, k = 20)[["dim.est"]])
   }
 
   object <- object %>% Seurat::RunUMAP(dims = 1:ndims)
@@ -97,50 +90,54 @@ visualize_data <- function(object, group.by = "cell_type", ndims = NULL, ...){
 #' \dontrun{
 #' #' integrate_samples()
 #' }
-integrate_samples <- function(object, method = "rpca", samples = "samples", seed = 42){
+integrate_samples <- function(object, method = "rpca", samples = "samples", seed = 42, npcs = 100, k.weight = 100, verbose = FALSE) {
   set.seed(42)
-  if(typeof(object) == "list"){
+  if (typeof(object) == "list") {
     object_list <- object
-  }else{
+  } else {
     object_list <- Seurat::SplitObject(object, split.by = samples)
   }
 
   ## normalize data and find variable features for each sample
-  object_list <- lapply(object_list, function(ob){
-    ob <- ob %>% Seurat::NormalizeData() %>% Seurat::FindVariableFeatures();
+  object_list <- lapply(object_list, function(ob) {
+    ob <- ob %>%
+      Seurat::NormalizeData(verbose = verbose) %>%
+      Seurat::FindVariableFeatures(verbose = verbose)
     ob
   })
 
   ## select features that are repeatedly variable across samples
-  features <- Seurat::SelectIntegrationFeatures(object.list = object_list)
+  features <- Seurat::SelectIntegrationFeatures(object.list = object_list, verbose = verbose)
 
   ## scale and calculate PCs for each sample
   object_list <- lapply(object_list, function(ob) {
-    ob <- ob %>% Seurat::ScaleData(verbose = FALSE, features = features) %>%
-      Seurat::RunPCA(verbose = FALSE, npcs = 100, features = features);
+    ob <- ob %>%
+      Seurat::ScaleData(verbose = verbose, features = features) %>%
+      Seurat::RunPCA(verbose = verbose, npcs = npcs, features = features)
     ob
   })
 
 
   ## find integration anchors
-  integration.anchors <- Seurat::FindIntegrationAnchors(object.list = object_list, anchor.features = features, reduction = "rpca")
+  integration.anchors <- Seurat::FindIntegrationAnchors(object.list = object_list, anchor.features = features, reduction = "rpca", verbose = verbose)
 
-  object_integrated <- Seurat::IntegrateData(anchorset = integration.anchors)
+  object_integrated <- Seurat::IntegrateData(anchorset = integration.anchors, k.weight = k.weight, verbose = verbose)
 
   Seurat::DefaultAssay(object_integrated) <- "integrated"
 
   # ## run default processing steps also with rna assay if later used
   Seurat::DefaultAssay(object_integrated) <- "RNA"
-  if(utils::packageVersion("SeuratObject") >= "5.0.0"){
+  if (utils::packageVersion("SeuratObject") >= "5.0.0") {
     object_integrated <- object_integrated %>% SeuratObject::JoinLayers()
   }
-  object_integrated <- object_integrated %>% Seurat::NormalizeData() %>%
-                        Seurat::FindVariableFeatures() %>% Seurat::ScaleData()
+  object_integrated <- object_integrated %>%
+    Seurat::NormalizeData(verbose = verbose) %>%
+    Seurat::FindVariableFeatures(verbose = verbose) %>%
+    Seurat::ScaleData(verbose = verbose)
 
   Seurat::DefaultAssay(object_integrated) <- "integrated"
 
   return(object_integrated)
-
 }
 
 
@@ -156,33 +153,35 @@ integrate_samples <- function(object, method = "rpca", samples = "samples", seed
 #' \dontrun{
 #' cluster_data(object, resolution = 0.8)
 #' }
-cluster_data <- function(object, resolution = 0.8, npcs = NULL, seed = 42){
+cluster_data <- function(object, resolution = 0.8, npcs_calculate = 100, npcs = NULL, seed = 42, verbose = FALSE) {
   set.seed(seed)
   default_assay <- Seurat::DefaultAssay(object)
 
-  if(default_assay == "integrated"){
-    object <- object %>% Seurat::ScaleData() %>%
-                          Seurat::RunPCA(assay = default_assay, npcs = 100)
-  }else{
-    object <- object %>% Seurat::NormalizeData() %>%
-                          Seurat::ScaleData() %>%
-                          Seurat::FindVariableFeatures() %>%
-                          Seurat::RunPCA(assay = default_assay, npcs = 100)
+  if (default_assay == "integrated") {
+    object <- object %>%
+      Seurat::ScaleData(verbose = verbose) %>%
+      Seurat::RunPCA(assay = default_assay, npcs = npcs_calculate, verbose = verbose)
+  } else {
+    object <- object %>%
+      Seurat::NormalizeData(verbose = verbose) %>%
+      Seurat::ScaleData(verbose = verbose) %>%
+      Seurat::FindVariableFeatures(verbose = verbose) %>%
+      Seurat::RunPCA(assay = default_assay, npcs = npcs_calculate, verbose = verbose)
   }
 
-  if(is.null(npcs)){
+  if (is.null(npcs)) {
     ndims <- ceiling(intrinsicDimension::maxLikGlobalDimEst(object@reductions[[paste0("pca")]]@cell.embeddings,
-                                                            k = 20)[["dim.est"]])
-  }else{
+      k = 20
+    )[["dim.est"]])
+  } else {
     ndims <- npcs
   }
 
-  print(paste0("Number of used dimensions for clustering: ",ndims))
-  object <- object %>% Seurat::RunUMAP(dims = 1:ndims) %>%
-              Seurat::FindNeighbors(dims = 1:ndims, reduction= "pca") %>%
-              Seurat::FindClusters(resolution = resolution)
+  print(paste0("Number of used dimensions for clustering: ", ndims))
+  object <- object %>%
+    Seurat::RunUMAP(dims = 1:ndims, verbose = verbose) %>%
+    Seurat::FindNeighbors(dims = 1:ndims, reduction = "pca", verbose = verbose) %>%
+    Seurat::FindClusters(resolution = resolution, verbose = verbose)
 
   return(object)
 }
-
-

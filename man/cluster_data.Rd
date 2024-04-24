@@ -4,7 +4,14 @@
 \alias{cluster_data}
 \title{Title}
 \usage{
-cluster_data(object, resolution = 0.8, npcs = NULL, seed = 42)
+cluster_data(
+  object,
+  resolution = 0.8,
+  npcs_calculate = 100,
+  npcs = NULL,
+  seed = 42,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{object}{A}

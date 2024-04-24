@@ -14,6 +14,7 @@ mad_filtering(
   print_plots = TRUE,
   seed = 42,
   min.features = NULL,
+  verbose = FALSE,
   ...
 )
 }
