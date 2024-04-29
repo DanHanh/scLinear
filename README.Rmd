@@ -84,7 +84,7 @@ if(is.null(py_modules_list_not_available)){ "All python modules are available"}e
 
 if (!require("devtools", quietly = TRUE)){install.packages("devtools")}
 
-devtools::install_github("DanHanh/scLinear", ref = "dev")
+devtools::install_github("DanHanh/scLinear")
 
 ```
 
